@@ -7,8 +7,9 @@
        </el-header>
        <el-aside>
          <el-menu
-           default-active="/user/monitor"
-           class="el-menu-vertical-demo">
+           :default-active=activeIndex
+           class="el-menu-vertical-demo"
+           @select="handleSelect">
            <el-menu-item index="/user/monitor">
              <i class="el-icon-camera"></i>
              <span slot="title">实时监控</span>
