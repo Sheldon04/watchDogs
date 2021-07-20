@@ -1,0 +1,131 @@
+<template>
+  <div>
+    <!--flex弹性盒子模型，justify-content：主抽 -->
+    <div style="display: flex;justify-content: center;margin-top: 150px" class="mycard">
+      <el-card style="width: 380px">
+        <div slot="header" class="clearfix">
+          <span>登录</span>
+        </div>
+        <table>
+          <tr>
+            <td>用户名</td>
+            <td>
+              <el-input v-model="user.username" placeholder="请输入用户名"></el-input>
+            </td>
+          </tr>
+          <br>
+          <tr>
+            <td>密码</td>
+            <td>
+              <el-input type="password" v-model="user.password" placeholder="请输入密码" @keydown.enter.native="submitForm"></el-input>
+              <!-- @keydown.enter.native="doLogin"当按下enter键的时候也会执行doLogin方法-->
+            </td>
+          </tr>
+          <br>
+          <tr>
+            <td colspan="2">
+              <el-checkbox-group
+                v-model="checkedRoles"
+                :min="0"
+                :max="1">
+                <el-checkbox v-for="role in roles" :label="role" :key="role">{{role}}</el-checkbox>
+              </el-checkbox-group>
+            </td>
+          </tr>
+          <tr>
+            <!-- 占两行-->
+            <td colspan="2">
+              <!-- 点击事件的两种不同的写法v-on:click和 @click-->
+              <!--<el-button style="width: 300px" type="primary" v-on:click="doLogin">登录</el-button>-->
+              <el-button style="width: 300px" type="primary" @click="submitForm">登录</el-button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <el-link href="https://element.eleme.io" target="_blank" style="width: 300px" >没有账号？注册</el-link>
+            </td>
+          </tr>
+        </table>
+      </el-card>
+    </div>
+    <div class="background">
+      <img :src="imgSrc" width="100%" height="100%" alt="" />
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+export default {
+  // 单页面中不支持前面的data:{}方式
+  data () {
+    const rolesOptions = ['用户', '管理员']
+    // 相当于以前的function data(){},这是es5之前的写法，新版本可以省略掉function
+    return {
+      user: {
+        role: 'user', // or 'admin'
+        username: 'zhangsan',
+        password: '123'
+        // 为了登录方便，可以直接在这里写好用户名和密码的值
+      },
+      imgSrc: require('../assets/img1.png'),
+      checkedRoles: [],
+      roles: rolesOptions
+    }
+  },
+  methods: {
+    async submitForm () {
+      axios.defaults.headers.common['Authorization'] = ''
+      /*
+      axios.defaults.headers.common['Authorization'] = ''
+      localStorage.removeItem('token')
+      const formData = {
+        role: this.user.role,
+        username: this.user.username,
+        password: this.user.password
+      }
+      await axios
+        .post('/api/v1/token/login/', formData)
+        .then(response => {
+          const token = response.data.auth_token
+          this.$store.commit('setToken', token)
+
+          axios.defaults.headers.common['Authorization'] = 'Token ' + token
+          localStorage.setItem('token', token)
+          const toPath = this.$route.query.to || '/cart'
+          this.$router.push(toPath)
+        })
+        .catch(error => {
+          if (error.response) {
+            for (const property in error.response.data) {
+              this.errors.push(`${property}: ${error.response.data[property]}`)
+            }
+          } else {
+            this.errors.push('Something went wrong. Please try again')
+            alert(JSON.stringify(error))
+            console.log(JSON.stringify(error))
+          }
+        })
+        */
+      this.$router.push('/user/monitor')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.background{
+  width: 100%;
+  height: 100%;  /**宽高100%是为了图片铺满屏幕 */
+  left: 0;
+  top: 0;
+  z-index:-1;
+  position: absolute;
+}
+.mycard{
+  left: 1000px;
+  top: 40px;
+  position: absolute;
+}
+
+</style>
