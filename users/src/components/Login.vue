@@ -123,8 +123,8 @@ export default {
   position: absolute;
 }
 .mycard{
-  left: 1000px;
-  top: 40px;
+  left: 70%;
+  top: 10%;
   position: absolute;
 }
 
