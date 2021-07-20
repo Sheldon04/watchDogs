@@ -12,7 +12,7 @@ def init_camera(choice):
         video="http://admin:admin@192.168.43.1:8081"   #此处@后的ipv4 地址需要改为app提供的地址
         return cv2.VideoCapture(video)
     else:
-        file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
+        file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
         return cv2.VideoCapture(file_path)
     # camera = cv2.VideoCapture(0) # 参数0表示第一个摄像头
     # cv2.namedWindow("camera",1)
