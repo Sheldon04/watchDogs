@@ -1,4 +1,4 @@
-"""djangoBackend URL Configuration
+"""djangoProject URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -15,12 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.conf.urls import include, url
-from django.views.generic.base import TemplateView
-from django.http import HttpResponse
-from django.shortcuts import render
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url('api/666', view=lambda request: HttpResponse('戏说不是胡说'))
 ]
