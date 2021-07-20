@@ -63,9 +63,9 @@ export default {
     // 相当于以前的function data(){},这是es5之前的写法，新版本可以省略掉function
     return {
       user: {
-        role: 'user', // or 'admin'
-        username: 'zhangsan',
-        password: '123'
+        issuperuser: '1', // or 'admin'
+        username: 'sheldon',
+        password: '123456'
         // 为了登录方便，可以直接在这里写好用户名和密码的值
       },
       imgSrc: require('../assets/img1.png'),
@@ -75,39 +75,23 @@ export default {
   },
   methods: {
     async submitForm () {
-      axios.defaults.headers.common['Authorization'] = ''
-      /*
-      axios.defaults.headers.common['Authorization'] = ''
-      localStorage.removeItem('token')
-      const formData = {
-        role: this.user.role,
-        username: this.user.username,
-        password: this.user.password
-      }
-      await axios
-        .post('/api/v1/token/login/', formData)
-        .then(response => {
-          const token = response.data.auth_token
-          this.$store.commit('setToken', token)
-
-          axios.defaults.headers.common['Authorization'] = 'Token ' + token
-          localStorage.setItem('token', token)
-          const toPath = this.$route.query.to || '/cart'
-          this.$router.push(toPath)
-        })
-        .catch(error => {
-          if (error.response) {
-            for (const property in error.response.data) {
-              this.errors.push(`${property}: ${error.response.data[property]}`)
-            }
-          } else {
-            this.errors.push('Something went wrong. Please try again')
-            alert(JSON.stringify(error))
-            console.log(JSON.stringify(error))
-          }
-        })
-        */
-      this.$router.push('/user/monitor')
+      axios.post('http://127.0.0.1:8000/api/user/login', this.user).then(response => {
+        const {result, detail, errorInfo} = response.data
+        if (result === true) {
+          // 登录成功
+          // 设置token
+          localStorage.setItem('token', detail.token)
+          // 跳转页面
+          this.$router.push('/user/monitor')
+        } else {
+          this.$message({
+            showClose: true,
+            message: errorInfo,
+            type: 'error'
+          })
+          console.log('?????????failed???????')
+        }
+      })
     }
   }
 }
