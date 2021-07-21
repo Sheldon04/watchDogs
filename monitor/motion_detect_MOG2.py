@@ -25,6 +25,7 @@ class Detector:
             self.camera.set(6, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
         else:
             file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
+            # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
             self.camera = cv2.VideoCapture(file_path)
 
         # 判断视频是否打开
@@ -36,8 +37,8 @@ class Detector:
     def get_fgmask(self, frame):
         fgmask = self.fgbg.apply(frame)
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, self.kernel)
-        fgmask = cv2.GaussianBlur(fgmask, (21, 21), 0)
-        fgmask = cv2.dilate(fgmask, None, iterations=10)
+        # fgmask = cv2.GaussianBlur(fgmask, (21, 21), 0)
+        # fgmask = cv2.dilate(fgmask, None, iterations=2)
         return fgmask
 
     def stop_video(self):
@@ -60,13 +61,22 @@ class Detector:
 
         fps = 30  # 帧率
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
+        # self.fgbg = cv2.bgsegm.createBackgroundSubtractorGMG()
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         motion_cnt = 0
         static_cnt = 0
+        pre_motion_num = 0
+        pre_frame = None
         while True:
             start = time.time()
             grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
+            # new_frame = frame_lwpCV.copy()
+            gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY)  # 转灰度图
+            gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
+            gray_lwpCV = cv2.resize(gray_lwpCV, size)
             # frame_lwpCV = cv2.resize(frame_lwpCV, (500, 500))
+            if pre_frame is None:
+                pre_frame = gray_lwpCV
 
             if not grabbed:
                 break
@@ -80,10 +90,17 @@ class Detector:
             # 在完成对帧的灰度转换和平滑后，就可计算与背景帧的差异，并得到一个差分图（different map）
             # 还需要应用阈值来得到一幅黑白图像，并通过下面代码来膨胀（dilate）图像，从而对孔（hole）和缺陷（imperfection）进行归一化处理
             # 背景移除
-            thresh = cv2.threshold(fgmask, 25, 255, cv2.THRESH_BINARY)[1]
-            contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            abs_mask = cv2.absdiff(gray_lwpCV, pre_frame)
+            fgthred = cv2.threshold(fgmask, 10, 255, cv2.THRESH_BINARY)[1]
+            thresh = cv2.threshold(abs_mask, 10, 255, cv2.THRESH_BINARY)[1]
+            thresh = cv2.dilate(thresh, None, iterations=1)
+            new_abs = cv2.absdiff(thresh, fgthred)
+            contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if len(contours) - pre_motion_num > 20:
+                # TODO 按照物体移动速度
+                pass
             for c in contours:
-                if cv2.contourArea(c) < 1500 or cv2.contourArea(c) > 50000:
+                if cv2.contourArea(c) < 500 or cv2.contourArea(c) > 50000:
                     static_cnt += 1
                     if static_cnt > 10:
                         self.stop_video()
@@ -94,26 +111,26 @@ class Detector:
                 motion_cnt += 1
                 # 有移动物体
                 (x, y, w, h) = cv2.boundingRect(c)
-                # cv2.rectangle(fgmask, (x, y), (x + w, y + h), (255, 255, 0), 2)
+                cv2.rectangle(fgmask, (x, y), (x + w, y + h), (255, 255, 0), 2)
                 cv2.rectangle(frame_lwpCV, (x, y), (x + w, y + h), (0, 255, 255), 2)
                 # cv2.imshow('fgmask', fgmask)
                 # cv2.imshow('lwpCVWindow', frame_lwpCV)
 
                 # if not flag:
-                # tracker = cv2.TrackerMIL_create()
-                # bbox = cv2.selectROI(frame_lwpCV, False)
-                # print(bbox)
-                # bbox = (x, y, w, h)
-                # print(bbox)
-                # ok = tracker.init(frame_lwpCV, bbox)
-                    # flag = True
-
+                #     tracker = cv2.TrackerKCF_create()
+                #     bbox = cv2.selectROI(frame_lwpCV, False)
+                #     # print(bbox)
+                #     # bbox = (x, y, w, h)
+                #     print(bbox)
+                #     ok = tracker.init(frame_lwpCV, bbox)
+                #     flag = True
+                #
                 # ok, bbox = tracker.update(frame_lwpCV)
-                # if ok:
-                #     new_frame = frame_lwpCV.copy()
-                #     p1 = (int(bbox[0]), int(bbox[1]))
-                #     p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
-                #     cv2.rectangle(new_frame, p1, p2, (255, 0, 0), 2, 1)
+                # # if ok:
+                # # new_frame = frame_lwpCV.copy()
+                # p1 = (int(bbox[0]), int(bbox[1]))
+                # p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+                # cv2.rectangle(new_frame, p1, p2, (255, 0, 0), 2, 1)
 
                 # Images
                 # img = frame_lwpCV  # or file, PIL, OpenCV, numpy, multiple
@@ -136,7 +153,10 @@ class Detector:
                         self.video_writer.release()
                         print('stop')
 
-                yield frame_lwpCV
+            yield frame_lwpCV, fgmask, thresh, new_abs
+
+            pre_motion_num = motion_cnt
+            pre_frame = gray_lwpCV
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 self.camera.release()
@@ -147,7 +167,11 @@ class Detector:
         cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    d = Detector(0)
-    for test in d.run():
+    d = Detector(1)
+    for test, mask, abs, new in d.run():
         cv2.imshow('test', test)
+        cv2.imshow('mask', mask)
+        cv2.imshow('abs', abs)
+        cv2.imshow('rel_abs', new)
         # cv2.imshow('new', new)
+

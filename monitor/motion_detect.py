@@ -12,7 +12,7 @@ def init_camera(choice):
         video="http://admin:admin@192.168.43.1:8081"   #此处@后的ipv4 地址需要改为app提供的地址
         return cv2.VideoCapture(video)
     else:
-        file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
+        file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
         return cv2.VideoCapture(file_path)
     # camera = cv2.VideoCapture(0) # 参数0表示第一个摄像头
     # cv2.namedWindow("camera",1)
@@ -103,7 +103,7 @@ if __name__ == '__main__':
                 (x, y, w, h) = cv2.boundingRect(c)
                 cv2.rectangle(thresh, (x, y), (x + w, y + h), (255, 255, 0), 2)
                 cv2.rectangle(frame_lwpCV, (x, y), (x + w, y + h), (255, 255, 0), 2)
-                cv2.imshow('fgmask', thresh)
+                cv2.imshow('fgmask', img_delta)
                 cv2.imshow('lwpCVWindow', frame_lwpCV)
                 # cv2.imshow(c)
                 # # yolov5检测物体
