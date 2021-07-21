@@ -107,6 +107,31 @@
   </div>
 </template>
 
+<style scoped>
+.main .el-table .warning-row {
+  background-color: oldlace;
+}
+
+.main .el-table .success-row {
+  background-color: #f0f9eb;
+}
+
+.el-menu {
+  width: 200px;
+  height: 800px;
+}
+.submenu-title {
+  font-size: 18px !important;
+}
+
+.main {
+  left: 200px;
+  top: 80px;
+  position: absolute;
+}
+
+</style>
+
 <script>
 export default {
   name: 'Monitor',
@@ -173,6 +198,14 @@ export default {
     }
   },
   methods: {
+    tableRowClassName ({row, rowIndex}) {
+      if (row.level === '严重') {
+        return 'warning-row'
+      } else if (row.level === '一般') {
+        return 'success-row'
+      }
+      return 'other'
+    },
     handleSizeChange (val) {
       console.log(`每页 ${val} 条`)
       this.currentPage = 1
@@ -188,39 +221,8 @@ export default {
     },
     handleClick (row) {
       console.log(row)
-    },
-    tableRowClassName ({row, rowIndex}) {
-      if (rowIndex === 1) {
-        return 'warning-row'
-      } else if (rowIndex === 3) {
-        return 'success-row'
-      }
-      return 'warning-row'
+      console.log(row.class)
     }
   }
 }
 </script>
-
-<style scoped>
-.el-menu {
-  width: 200px;
-  height: 800px;
-}
-.submenu-title {
-  font-size: 18px !important;
-}
-
-.main {
-  left: 200px;
-  top: 80px;
-  position: absolute;
-}
-
-.el-table.warning-row {
-  background: oldlace;
-}
-
-.el-table.success-row {
-  background: #f0f9eb;
-}
-</style>
