@@ -82,7 +82,11 @@ export default {
           // 设置token
           localStorage.setItem('token', detail.token)
           // 跳转页面
-          this.$router.push('/user/monitor')
+          if (this.user.issuperuser) {
+            this.$router.push('/admin/monitor')
+          } else {
+            this.$router.push('/user/monitor')
+          }
         } else {
           this.$message({
             showClose: true,
