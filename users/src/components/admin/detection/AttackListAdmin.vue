@@ -5,6 +5,7 @@
         <el-header>
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
+<<<<<<< Updated upstream
         <el-aside width="200px">
           <el-dropdown class="user-menu" placement="bottom-start">
            <span class="el-dropdown-link">
@@ -16,6 +17,9 @@
               <el-dropdown-item>注销</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
+=======
+        <el-aside>
+>>>>>>> Stashed changes
           <el-menu
             :default-active=activeIndex
             class="el-menu"
@@ -73,7 +77,7 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <table>
+          <table class="main-table">
             <tr>
               <td>按日期选择</td>
               <td>
@@ -82,7 +86,9 @@
                   align="right"
                   type="date"
                   placeholder="选择日期"
-                  :picker-options="pickerOptions">
+                  :picker-options="pickerOptions"
+                  format="yyyy 年 MM 月 dd 日"
+                  value-format="yyyy-MM-dd">
                 </el-date-picker>
               </td>
               <td>按时间范围选择</td>
@@ -93,8 +99,12 @@
                   range-separator="至"
                   start-placeholder="开始时间"
                   end-placeholder="结束时间"
-                  placeholder="选择时间范围">
+                  placeholder="选择时间范围"
+                  value-format="HH:mm:ss">
                 </el-time-picker>
+              </td>
+              <td>
+                <el-button @click="search">查找</el-button>
               </td>
             </tr>
           </table>
@@ -102,29 +112,32 @@
           <br>
           <el-table
             :data="tableData"
-            style="width: 100%"
+            style="width: 1000px"
             :row-class-name="tableRowClassName">
             <el-table-column
               prop="date"
-              label="日期"
-              width="180">
+              label="时间"
+              width="200">
             </el-table-column>
             <el-table-column
               prop="level"
               label="报警级别"
-              width="180">
+              width="150">
             </el-table-column>
             <el-table-column
               prop="camera"
-              label="摄像头">
+              label="摄像头"
+              width="150">
             </el-table-column>
             <el-table-column
               prop="area"
-              label="报警区域">
+              label="报警区域"
+              width="150">
             </el-table-column>
             <el-table-column
-              prop="camera"
-              label="摄像头">
+              prop="number"
+              label="入侵数量"
+              width="150">
             </el-table-column>
             <el-table-column
               fixed="right"
@@ -135,38 +148,118 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination align='center' @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                         :current-page="currentPage"
+                         :page-sizes="[10,20,50,100]"
+                         :page-size="pageSize"
+                         layout="total, sizes, prev, pager, next, jumper"
+                         :total="tableData.length">
+          </el-pagination>
         </el-main>
       </el-container>
     </div>
   </div>
 </template>
 
+<style>
+.main .el-table .warning-row {
+  background-color: oldlace;
+}
+
+.main .el-table .common-row {
+  background-color: #f0f9eb;
+}
+.submenu-title {
+  font-size: 18px !important;
+}
+.main {
+  left: 200px;
+  top: 80px;
+  position: absolute;
+}
+</style>
+
 <script>
+import axios from 'axios'
 export default {
   name: 'Monitor',
+  mounted () {
+    axios.get('http://127.0.0.1:8000/api/user/attacklistuser/all').then(response => {
+      this.tableData = response.data
+    })
+  },
+  methods: {
+    async search () {
+      let keywords = []
+      keywords.push(this.date)
+      if (this.timespan.length !== 0) {
+        keywords = keywords.concat(this.timespan)
+      }
+      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', keywords).then(response => {
+        this.tableData = response.data
+      })
+      console.log(keywords)
+    },
+    tableRowClassName ({row, rowIndex}) {
+      if (row.level === '严重') {
+        return 'warning-row'
+      } else if (row.level === '中等') {
+        return 'common-row'
+      }
+      return 'other'
+    },
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+      this.currentPage = 1
+      this.pageSize = val
+    },
+    handleCurrentChange (val) {
+      console.log(`当前页: ${val}`)
+      this.currentPage = val
+    },
+    handleSelect (key, keyPath) {
+      console.log(key, keyPath)
+      this.$router.push(key)
+    },
+    handleClick (row) {
+      console.log(this.timespan)
+      console.log(this.date)
+    }
+  },
   data () {
     return {
+      currentPage: 1, // 当前页码
+      total: 0, // 总条数
+      pageSize: 10, // 每页的数据条数
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
       options: [],
-      date: '',
-      timespan: '',
+      date: '2021-7-21',
+      timespan: [],
       tableData: [{
         date: '2016-05-02',
-        level: '王小虎',
-        camera: '上海市普陀区金沙江路 1518 弄'
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        date: '2016-05-02',
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        date: '2016-05-02',
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        date: '2016-05-02',
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }],
       pickerOptions: {
         disabledDate (time) {
@@ -194,26 +287,10 @@ export default {
         }]
       }
     }
-  },
-  methods: {
-    handleSelect (key, keyPath) {
-      console.log(key, keyPath)
-      this.$router.push(key)
-    },
-    handleClick (row) {
-      console.log(row)
-    },
-    tableRowClassName ({row, rowIndex}) {
-      if (rowIndex === 1) {
-        return 'warning-row'
-      } else if (rowIndex === 3) {
-        return 'success-row'
-      }
-      return 'warning-row'
-    }
   }
 }
 </script>
+<<<<<<< Updated upstream
 
 <style scoped>
 .submenu-title {
@@ -240,3 +317,5 @@ export default {
 }
 
 </style>
+=======
+>>>>>>> Stashed changes
