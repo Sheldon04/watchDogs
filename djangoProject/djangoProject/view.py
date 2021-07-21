@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
+import time
 
+import cv2
 from django.contrib import auth
+from django.http import StreamingHttpResponse
 
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from monitor.motion_detect_MOG2 import Detector
+from django.views.decorators.http import require_http_methods
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
@@ -46,3 +51,21 @@ def login(request):
     token = tokenObj.key
     return Response({"result": result, "detail": {'token': token}, "errorInfo": errorInfo})
 
+def gen(d):
+    while True:
+        for frame, _, _, _ in d.run():
+            time.sleep(.1)
+            cv2.imwrite('./1.jpg', frame)
+            flag, buffer = cv2.imencode('.jpg', frame)
+            if not flag:
+                continue
+            print('send video')
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n\r\n')
+
+@api_view(['GET'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def send_video(request):
+    d = Detector(1)
+
+    return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
