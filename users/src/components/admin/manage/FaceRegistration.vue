@@ -73,15 +73,46 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <el-upload
-            class="avatar-uploader"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload">
-            <img v-if="imageUrl" :src="imageUrl" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
+          <el-form ref="form" :model="form" label-width="130px" class="form">
+            <el-form-item label="上传头像">
+              <el-upload
+                class="avatar-uploader"
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload">
+                <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
+            </el-form-item>
+            <el-form-item label="注册人姓名">
+              <el-input v-model="form.name"></el-input>
+            </el-form-item>
+            <el-form-item label="手机号">
+              <el-input v-model="form.phone"></el-input>
+            </el-form-item>
+            <el-form-item label="准入区域">
+              <el-select v-model="form.region" placeholder="请选择准入区域">
+                <el-option label="区域一" value="shanghai"></el-option>
+                <el-option label="区域二" value="beijing"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="准入时间">
+              <el-col :span="11">
+                <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker>
+              </el-col>
+              <el-col class="line" :span="2">-</el-col>
+              <el-col :span="11">
+                <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
+              </el-col>
+            </el-form-item>
+            <el-form-item label="是否超级管理员">
+              <el-switch v-model="form.is_superuser"></el-switch>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmit">立即注册</el-button>
+            </el-form-item>
+          </el-form>
         </el-main>
       </el-container>
     </div>
@@ -95,7 +126,16 @@ export default {
     return {
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
-      imageUrl: ''
+      imageUrl: '',
+      form: {
+        name: '',
+        phone: '',
+        region: '',
+        date1: '',
+        date2: '',
+        is_superuser: false,
+        face_img: ''
+      }
     }
   },
   methods: {
@@ -108,15 +148,15 @@ export default {
     },
     beforeAvatarUpload (file) {
       const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
+      const isLt10M = file.size / 1024 / 1024 < 10
 
       if (!isJPG) {
         this.$message.error('上传头像图片只能是 JPG 格式!')
       }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+      if (!isLt10M) {
+        this.$message.error('上传头像图片大小不能超过 10MB!')
       }
-      return isJPG && isLt2M
+      return isJPG && isLt10M
     }
   }
 }
@@ -149,10 +189,9 @@ export default {
 .submenu-title {
   font-size: 18px !important;
 }
-
-.main {
-  left: 200px;
-  top: 80px;
+.form {
+  top: 15%;
+  left: 30%;
   position: absolute;
 }
 
