@@ -5,10 +5,14 @@ import Monitor from '../components/user/MonitorUser'
 import TracebackUser from '../components/user/TracebackUser'
 import AttackListUser from '../components/user/AttackListUser'
 import AttackInfoUser from '../components/user/AttackInfoUser'
-import MonitorAdmin from '../components/admin/MonitorAdmin'
-import TracebackUserAdmin from '../components/admin/TracebackAdmin'
-import AttackListUserAdmin from '../components/admin/AttackListAdmin'
-import AttackInfoUserAdmin from '../components/admin/AttackInfoAdmin'
+import MonitorAdmin from '../components/admin/detection/MonitorAdmin'
+import TracebackUserAdmin from '../components/admin/detection/TracebackAdmin'
+import AttackListUserAdmin from '../components/admin/detection/AttackListAdmin'
+import AttackInfoUserAdmin from '../components/admin/detection/AttackInfoAdmin'
+import FaceRegistration from '../components/admin/manage/FaceRegistration'
+import StuffManage from '../components/admin/manage/StuffManage'
+import Segmentation from '../components/admin/settings/Segmentation'
+import WhiteList from '../components/admin/settings/WhiteList'
 
 Vue.use(Router)
 
@@ -58,6 +62,26 @@ var router = new Router({
       path: '/admin/attackinfo',
       name: 'AttackInfoUserAdmin',
       component: AttackInfoUserAdmin
+    },
+    {
+      path: '/admin/facereg',
+      name: 'FaceRegistration',
+      component: FaceRegistration
+    },
+    {
+      path: '/admin/usermanage',
+      name: 'StuffManage',
+      component: StuffManage
+    },
+    {
+      path: '/admin/whitelist',
+      name: 'WhiteList',
+      component: WhiteList
+    },
+    {
+      path: '/admin/segmentation',
+      name: 'Segmentation',
+      component: Segmentation
     }
   ]
 })

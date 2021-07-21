@@ -5,12 +5,10 @@
         <el-header>
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
-        <el-aside>
+        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
           <el-menu
-            default-active="2"
-            class="el-menu-vertical-demo"
-            @open="handleOpen"
-            @close="handleClose"
+            :default-active=activeIndex
+            class="el-menu"
             @select="handleSelect">
             <el-submenu index="1">
               <template slot="title">
@@ -19,19 +17,19 @@
               </template>
               <el-menu-item index="/admin/monitor">
                 <i class="el-icon-camera"></i>
-                <span slot="title">实时监控</span>
+                实时监控
               </el-menu-item>
               <el-menu-item index="/admin/traceback">
                 <i class="el-icon-refresh"></i>
-                <span slot="title">入侵回放</span>
+                入侵回放
               </el-menu-item>
               <el-menu-item index="/admin/attacklist">
                 <i class="el-icon-document"></i>
-                <span slot="title">查看记录</span>
+                查看记录
               </el-menu-item>
               <el-menu-item index="/admin/attackinfo">
                 <i class="el-icon-setting"></i>
-                <span slot="title">入侵统计</span>
+                入侵统计
               </el-menu-item>
             </el-submenu>
             <el-submenu index="2">
@@ -39,13 +37,13 @@
                 <i class="el-icon-user"></i>
                 <span>用户管理</span>
               </template>
-              <el-menu-item index="/admin/monitor">
+              <el-menu-item index="/admin/facereg">
                 <i class="el-icon-camera"></i>
-                <span slot="title">人脸识别注册</span>
+                人脸识别注册
               </el-menu-item>
-              <el-menu-item index="/admin/monitor">
+              <el-menu-item index="/admin/usermanage">
                 <i class="el-icon-document"></i>
-                <span slot="title">用户信息管理</span>
+                用户信息管理
               </el-menu-item>
             </el-submenu>
             <el-submenu index="3">
@@ -53,13 +51,13 @@
                 <i class="el-icon-setting"></i>
                 <span>监控设置</span>
               </template>
-              <el-menu-item index="/admin/monitor">
+              <el-menu-item index="/admin/whitelist">
                 <i class="el-icon-document-checked"></i>
-                <span slot="title">可信名单管理</span>
+                可信名单管理
               </el-menu-item>
-              <el-menu-item index="/admin/monitor">
+              <el-menu-item index="/admin/segmentation">
                 <i class="el-icon-crop"></i>
-                <span slot="title">监控区域划分</span>
+                监控区域划分
               </el-menu-item>
             </el-submenu>
           </el-menu>
@@ -139,7 +137,7 @@ export default {
   data () {
     return {
       activeIndex: this.$route.path,
-      imgSrc: require('../../assets/img3.jpg'),
+      imgSrc: require('../../../assets/img3.jpg'),
       options: [],
       date: '',
       timespan: '',
@@ -208,10 +206,6 @@ export default {
 </script>
 
 <style scoped>
-.el-menu {
-  width: 200px;
-  height: 800px;
-}
 .submenu-title {
   font-size: 18px !important;
 }
