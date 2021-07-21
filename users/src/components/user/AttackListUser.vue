@@ -62,25 +62,28 @@
             :row-class-name="tableRowClassName">
             <el-table-column
               prop="date"
-              label="日期"
-              width="180">
+              label="时间"
+              width="200">
             </el-table-column>
             <el-table-column
               prop="level"
               label="报警级别"
-              width="180">
+              width="150">
             </el-table-column>
             <el-table-column
               prop="camera"
-              label="摄像头">
+              label="摄像头"
+              width="150">
             </el-table-column>
             <el-table-column
               prop="area"
-              label="报警区域">
+              label="报警区域"
+              width="150">
             </el-table-column>
             <el-table-column
-              prop="camera"
-              label="摄像头">
+              prop="number"
+              label="入侵数量"
+              width="150">
             </el-table-column>
             <el-table-column
               fixed="right"
@@ -91,17 +94,52 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination align='center' @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                         :current-page="currentPage"
+                         :page-sizes="[10,20,50,100]"
+                         :page-size="pageSize"
+                         layout="total, sizes, prev, pager, next, jumper"
+                         :total="tableData.length">
+          </el-pagination>
         </el-main>
       </el-container>
     </div>
   </div>
 </template>
 
+<style scoped>
+.main .el-table .warning-row {
+  background-color: oldlace;
+}
+
+.main .el-table .success-row {
+  background-color: #f0f9eb;
+}
+
+.el-menu {
+  width: 200px;
+  height: 800px;
+}
+.submenu-title {
+  font-size: 18px !important;
+}
+
+.main {
+  left: 200px;
+  top: 80px;
+  position: absolute;
+}
+
+</style>
+
 <script>
 export default {
   name: 'Monitor',
   data () {
     return {
+      currentPage: 1, // 当前页码
+      total: 0, // 总条数
+      pageSize: 10, // 每页的数据条数
       activeIndex: this.$route.path,
       imgSrc: require('../../assets/img3.jpg'),
       options: [],
@@ -109,20 +147,28 @@ export default {
       timespan: '',
       tableData: [{
         date: '2016-05-02',
-        level: '王小虎',
-        camera: '上海市普陀区金沙江路 1518 弄'
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        date: '2016-05-02',
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        date: '2016-05-02',
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        date: '2016-05-02',
+        level: '严重',
+        camera: '1',
+        area: '仓库',
+        number: '1'
       }],
       pickerOptions: {
         disabledDate (time) {
@@ -152,45 +198,31 @@ export default {
     }
   },
   methods: {
+    tableRowClassName ({row, rowIndex}) {
+      if (row.level === '严重') {
+        return 'warning-row'
+      } else if (row.level === '一般') {
+        return 'success-row'
+      }
+      return 'other'
+    },
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+      this.currentPage = 1
+      this.pageSize = val
+    },
+    handleCurrentChange (val) {
+      console.log(`当前页: ${val}`)
+      this.currentPage = val
+    },
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
       this.$router.push(key)
     },
     handleClick (row) {
       console.log(row)
-    },
-    tableRowClassName ({row, rowIndex}) {
-      if (rowIndex === 1) {
-        return 'warning-row'
-      } else if (rowIndex === 3) {
-        return 'success-row'
-      }
-      return 'warning-row'
+      console.log(row.class)
     }
   }
 }
 </script>
-
-<style scoped>
-.el-menu {
-  width: 200px;
-  height: 800px;
-}
-.submenu-title {
-  font-size: 18px !important;
-}
-
-.main {
-  left: 200px;
-  top: 80px;
-  position: absolute;
-}
-
-.el-table.warning-row {
-  background: oldlace;
-}
-
-.el-table.success-row {
-  background: #f0f9eb;
-}
-</style>
