@@ -64,8 +64,8 @@ export default {
     return {
       user: {
         issuperuser: '1', // or 'admin'
-        username: 'sheldon',
-        password: '123456'
+        username: '',
+        password: ''
         // 为了登录方便，可以直接在这里写好用户名和密码的值
       },
       imgSrc: require('../assets/img1.png'),
