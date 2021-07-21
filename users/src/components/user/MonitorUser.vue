@@ -29,7 +29,7 @@
          </el-menu>
        </el-aside>
        <el-main class="main">
-         <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://127.0.0.1:8000/api/video" width="1080" height="720">
+         <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://127.0.0.1:8000/api/video" type="video/mp4" width="1080" height="720">
        </el-main>
      </el-container>
    </div>
