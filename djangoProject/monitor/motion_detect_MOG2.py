@@ -1,9 +1,12 @@
+import base64
+
 import cv2
 import time
 import math
 import torch
 from datetime import datetime
 import numpy as np
+
 
 # Model
 # model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5x, custom
@@ -58,14 +61,14 @@ class Detector:
         # 测试用,查看视频size
         size = (int(self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
                 int(self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        print('size:' + repr(size))
+        # print('size:' + repr(size))
 
         fps = 30  # 帧率
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
         # self.fgbg = cv2.bgsegm.createBackgroundSubtractorGMG()
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        motion_body_cnt = 0      # 一帧中的移动物体
-        motion_frame_cnt = 0    # 出现移动物体的帧数
+        motion_body_cnt = 0  # 一帧中的移动物体
+        motion_frame_cnt = 0  # 出现移动物体的帧数
         pre_motion_num = 0
         is_first_invade = True
         is_invade = False
@@ -137,10 +140,18 @@ class Detector:
         self.camera.release()
         cv2.destroyAllWindows()
 
+
 if __name__ == '__main__':
     d = Detector(1)
     for test, mask, is_invade, invade_time in d.run():
         cv2.imshow('test', test)
-        cv2.imshow('mask', mask)
+        retval, buffer = cv2.imencode('.jpg', test)
+        cv2.imshow('jpeg', buffer)
+        pic_str = base64.b64encode(buffer)
+        print(type(test))
+        print(type(buffer))
+        # print(type(pic_str))
+        # print(type(buffer))
+        # cv2.imshow('img', img)
         if is_invade:
             print(invade_time)
