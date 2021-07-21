@@ -63,7 +63,7 @@ export default {
     // 相当于以前的function data(){},这是es5之前的写法，新版本可以省略掉function
     return {
       user: {
-        issuperuser: '1', // or 'admin'
+        is_superuser: 0, // or 'admin'
         username: '',
         password: ''
         // 为了登录方便，可以直接在这里写好用户名和密码的值
@@ -75,6 +75,13 @@ export default {
   },
   methods: {
     async submitForm () {
+      if (this.checkedRoles.length !== 0 && this.checkedRoles[0] === '用户') {
+        this.user.is_superuser = '0'
+        console.log('????????????!!!!!!!!!!')
+      } else {
+        this.user.is_superuser = '1'
+        console.log('----------------------')
+      }
       axios.post('http://127.0.0.1:8000/api/user/login', this.user).then(response => {
         const {result, detail, errorInfo} = response.data
         if (result === true) {
@@ -82,7 +89,7 @@ export default {
           // 设置token
           localStorage.setItem('token', detail.token)
           // 跳转页面
-          if (this.user.issuperuser) {
+          if (this.user.is_superuser === 1) {
             this.$router.push('/admin/monitor')
           } else {
             this.$router.push('/user/monitor')
