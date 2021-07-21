@@ -5,7 +5,6 @@
         <el-header>
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
-<<<<<<< Updated upstream
         <el-aside width="200px">
           <el-dropdown class="user-menu" placement="bottom-start">
            <span class="el-dropdown-link">
@@ -17,9 +16,6 @@
               <el-dropdown-item>注销</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-=======
-        <el-aside>
->>>>>>> Stashed changes
           <el-menu
             :default-active=activeIndex
             class="el-menu"
@@ -290,7 +286,6 @@ export default {
   }
 }
 </script>
-<<<<<<< Updated upstream
 
 <style scoped>
 .submenu-title {
