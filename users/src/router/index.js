@@ -5,6 +5,11 @@ import Monitor from '../components/user/MonitorUser'
 import TracebackUser from '../components/user/TracebackUser'
 import AttackListUser from '../components/user/AttackListUser'
 import AttackInfoUser from '../components/user/AttackInfoUser'
+import MonitorAdmin from '../components/admin/MonitorAdmin'
+import TracebackUserAdmin from '../components/admin/TracebackAdmin'
+import AttackListUserAdmin from '../components/admin/AttackListAdmin'
+import AttackInfoUserAdmin from '../components/admin/AttackInfoAdmin'
+
 Vue.use(Router)
 
 var router = new Router({
@@ -33,6 +38,26 @@ var router = new Router({
       path: '/user/attackinfo',
       name: 'AttackInfoUser',
       component: AttackInfoUser
+    },
+    {
+      path: '/admin/monitor',
+      name: 'MonitorAdmin',
+      component: MonitorAdmin
+    },
+    {
+      path: '/admin/traceback',
+      name: 'TracebackUserAdmin',
+      component: TracebackUserAdmin
+    },
+    {
+      path: '/admin/attacklist',
+      name: 'AttackListUserAdmin',
+      component: AttackListUserAdmin
+    },
+    {
+      path: '/admin/attackinfo',
+      name: 'AttackInfoUserAdmin',
+      component: AttackInfoUserAdmin
     }
   ]
 })
