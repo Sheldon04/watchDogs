@@ -42,7 +42,7 @@ export default {
   data () {
     return {
       activeIndex: this.$route.path,
-      imgSrc: require('../assets/img3.jpg')
+      imgSrc: require('../../assets/img3.jpg')
     }
   },
   methods: {

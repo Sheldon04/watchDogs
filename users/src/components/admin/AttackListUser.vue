@@ -66,21 +66,28 @@
               width="180">
             </el-table-column>
             <el-table-column
-              prop="name"
-              label="姓名"
+              prop="level"
+              label="报警级别"
               width="180">
             </el-table-column>
             <el-table-column
-              prop="address"
-              label="地址">
+              prop="camera"
+              label="摄像头">
+            </el-table-column>
+            <el-table-column
+              prop="area"
+              label="报警区域">
+            </el-table-column>
+            <el-table-column
+              prop="camera"
+              label="摄像头">
             </el-table-column>
             <el-table-column
               fixed="right"
               label="操作"
               width="100">
               <template slot-scope="scope">
-                <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-                <el-button type="text" size="small">编辑</el-button>
+                <el-button @click="handleClick(scope.row)" type="text" size="small">查看详情</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -96,14 +103,14 @@ export default {
   data () {
     return {
       activeIndex: this.$route.path,
-      imgSrc: require('../assets/img3.jpg'),
+      imgSrc: require('../../assets/img3.jpg'),
       options: [],
       date: '',
       timespan: '',
       tableData: [{
         date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
+        level: '王小虎',
+        camera: '上海市普陀区金沙江路 1518 弄'
       }, {
         date: '2016-05-04',
         name: '王小虎',
@@ -156,9 +163,9 @@ export default {
       if (rowIndex === 1) {
         return 'warning-row'
       } else if (rowIndex === 3) {
-        return 'alert-row'
+        return 'success-row'
       }
-      return ''
+      return 'warning-row'
     }
   }
 }
@@ -179,11 +186,11 @@ export default {
   position: absolute;
 }
 
-.el-table .warning-row {
+.el-table.warning-row {
   background: oldlace;
 }
 
-.el-table .alert-row {
-  background: red;
+.el-table.success-row {
+  background: #f0f9eb;
 }
 </style>
