@@ -14,7 +14,7 @@
            @select="handleSelect">
            <el-submenu index="1">
              <template slot="title">
-               <i class="el-icon-location"></i>
+               <i class="el-icon-view"></i>
                <span>入侵检测</span>
              </template>
              <el-menu-item index="/admin/monitor">
@@ -36,7 +36,7 @@
            </el-submenu>
            <el-submenu index="2">
              <template slot="title">
-               <i class="el-icon-location"></i>
+               <i class="el-icon-user"></i>
                <span>用户管理</span>
              </template>
              <el-menu-item index="/admin/monitor">
@@ -44,32 +44,24 @@
                <span slot="title">人脸识别注册</span>
              </el-menu-item>
              <el-menu-item index="/admin/monitor">
-               <i class="el-icon-camera"></i>
+               <i class="el-icon-document"></i>
                <span slot="title">用户信息管理</span>
              </el-menu-item>
            </el-submenu>
            <el-submenu index="3">
              <template slot="title">
-               <i class="el-icon-location"></i>
+               <i class="el-icon-setting"></i>
                <span>监控设置</span>
              </template>
              <el-menu-item index="/admin/monitor">
-               <i class="el-icon-camera"></i>
+               <i class="el-icon-document-checked"></i>
                <span slot="title">可信名单管理</span>
              </el-menu-item>
              <el-menu-item index="/admin/monitor">
-               <i class="el-icon-camera"></i>
+               <i class="el-icon-crop"></i>
                <span slot="title">监控区域划分</span>
              </el-menu-item>
            </el-submenu>
-           <el-menu-item index="3">
-             <i class="el-icon-document"></i>
-             <span slot="title">导航三</span>
-           </el-menu-item>
-           <el-menu-item index="4">
-             <i class="el-icon-setting"></i>
-             <span slot="title">导航四</span>
-           </el-menu-item>
          </el-menu>
        </el-aside>
        <el-main class="main">

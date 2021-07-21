@@ -19,6 +19,7 @@ def login(request):
     data = request.data
     username = data.get('username')
     password = data.get('password')
+    is_superuser = data.get('is_superuser')
 
     # 调用django进行用户认证
     # 验证成功 user返回<class 'django.contrib.auth.models.User'>
@@ -30,6 +31,10 @@ def login(request):
         errorInfo = u'用户名或密码错误'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
 
+    if user.is_superuser == False and is_superuser == '0':
+        result = False
+        errorInfo = u'权限不足'
+        return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
     # 用户名和密码验证成功
     # 获取用户的token 如果没有token ，表示时用户首次登录，则进行创建，并且返回token
     try:

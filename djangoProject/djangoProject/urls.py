@@ -20,5 +20,5 @@ from djangoProject import view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/user/login', view.login)
+    path('api/login', view.login)
 ]
