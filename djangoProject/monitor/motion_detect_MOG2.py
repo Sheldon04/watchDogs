@@ -26,13 +26,8 @@ class Detector:
             video = "http://admin:123456@100.58.198.227:8081"
             self.camera = cv2.VideoCapture(video)
             self.camera.set(6, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-<<<<<<< HEAD
         elif choice == 1:
             file_path = 'E:\\watchDogs\\djangoProject\\monitor\\data\\road.kux'
-=======
-        else:
-            file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
->>>>>>> e4894fbc180b74a339360ccc4a7bfba7c4aee582
             # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
             self.camera = cv2.VideoCapture(file_path)
 
@@ -238,7 +233,7 @@ class Detector:
 
 if __name__ == '__main__':
     d = Detector(1)
-    for test, mask, is_invade, invade_time in d.run2():
+    for test, mask, is_invade, invade_time in d.run():
         cv2.imshow('test', test)
         retval, buffer = cv2.imencode('.jpg', test)
         pic_str = base64.b64encode(buffer)
