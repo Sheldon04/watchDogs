@@ -38,7 +38,7 @@ def login(request):
         errorInfo = u'用户名或密码错误'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
 
-    if user.is_superuser == False and is_superuser == '0':
+    if user.is_superuser == False and is_superuser == '1':
         result = False
         errorInfo = u'权限不足'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
@@ -68,7 +68,7 @@ def gen(d):
 @permission_classes((AllowAny,))
 @authentication_classes(())
 def send_video(request):
-    d = Detector(1)
+    d = Detector(0)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
 @api_view(['GET'])

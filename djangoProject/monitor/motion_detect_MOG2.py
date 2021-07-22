@@ -23,7 +23,7 @@ class Detector:
         self.video_writer = None
         if choice == 0:
             # video="http://admin:admin@192.168.43.1:8081"   #此处@后的ipv4 地址需要改为app提供的地址
-            video = "http://admin:123456@100.58.198.227:8081"
+            video = "http://admin:123456@10.166.155.20:8081"
             self.camera = cv2.VideoCapture(video)
             self.camera.set(6, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
         else:
@@ -63,7 +63,7 @@ class Detector:
                 int(self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         # print('size:' + repr(size))
 
-        fps = 30  # 帧率
+        fps = 240  # 帧率
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
         # self.fgbg = cv2.bgsegm.createBackgroundSubtractorGMG()
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))

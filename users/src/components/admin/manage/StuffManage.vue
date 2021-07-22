@@ -73,7 +73,68 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://100.58.198.227:8081/video" width="1080" height="720">
+          <el-table
+            :data="tableData"
+            stripe
+            style="width: 1200px"
+            :default-sort = "{prop: 'id', order: 'descending'}">
+            <el-table-column
+              prop="id"
+              label="ID"
+              width="100"
+              type="index"
+              sortable>
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="姓名"
+              width="200"
+              sortable>
+            </el-table-column>
+            <el-table-column
+              prop="email"
+              label="邮箱"
+              width="200">
+            </el-table-column>
+            <el-table-column
+              prop="is_superuser"
+              label="是否为管理员"
+              width="200"
+              :filters="[{ text: '是', value: '是' }, { text: '否', value: '否' }]"
+              :filter-method="filterHandler">
+            </el-table-column>
+            <el-table-column
+              prop="last_login"
+              label="最近一次登录"
+              width="200"
+              sortable>
+            </el-table-column>
+            <el-table-column
+              align="center"
+              width="300">
+              <template slot="header" slot-scope="scope">
+                <div>
+                  <div class="search">
+                    <el-input
+                      v-model="search"
+                      size="mini"
+                      prefix-icon="el-icon-search"
+                      placeholder="输入关键字搜索"/>
+                  </div>
+                  <div class="search"><el-button icon="el-icon-search" size="mini" circle></el-button></div>
+                </div>
+              </template>
+              <template slot-scope="scope">
+                <el-button
+                  size="mini"
+                  @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-main>
       </el-container>
     </div>
@@ -85,14 +146,46 @@ export default {
   name: 'Monitor',
   data () {
     return {
+      search: '',
       activeIndex: this.$route.path,
-      imgSrc: require('../../../assets/img3.jpg')
+      imgSrc: require('../../../assets/img3.jpg'),
+      tableData: [{
+        name: '王小虎',
+        email: '123456@qq.com',
+        is_superuser: '是',
+        last_login: '2021-07-20 13:14:59'
+      }, {
+        name: '王小虎',
+        email: '123456@qq.com',
+        is_superuser: '是',
+        last_login: '2021-07-20 13:14:59'
+      }, {
+        name: '小虎',
+        email: '123456@qq.com',
+        is_superuser: '否',
+        last_login: '2021-07-20 13:14:59'
+      }, {
+        name: '王小虎',
+        email: '123456@qq.com',
+        is_superuser: '是',
+        last_login: '2020-07-20 13:14:59'
+      }]
     }
   },
   methods: {
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
       this.$router.push(key)
+    },
+    filterHandler (value, row, column) {
+      const property = column['property']
+      return row[property] === value
+    },
+    handleEdit (index, row) {
+      console.log(index, row)
+    },
+    handleDelete (index, row) {
+      console.log(index, row)
     }
   }
 }
@@ -112,6 +205,10 @@ export default {
 .user-menu {
   left: 50px;
   top: 5px;
+}
+
+.search {
+  display: inline-block;
 }
 
 </style>
