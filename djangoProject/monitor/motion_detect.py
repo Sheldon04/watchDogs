@@ -27,10 +27,6 @@ if __name__ == '__main__':
     else:
         print('摄像头未打开')
 
-    bg = cv2.imread('./data/back.jpg')
-    print(bg.shape)
-    cv2.imshow('back', bg)
-
     # 测试用,查看视频size
     size = (int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
             int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
@@ -43,27 +39,24 @@ if __name__ == '__main__':
     cnt = 0
     avg = None
 
-    # for i in range(200):
-    #     grabbed, frame_lwpCV = camera.read()  # 读取视频流
-    #     dim = None
-    #     (hh, ww) = frame_lwpCV.shape[:2]
-    #     rr = 500 / float(ww)
-    #     dim = (500, int(hh * rr))
-    #     frame_lwpCV = cv2.resize(frame_lwpCV, dim, interpolation=cv2.INTER_AREA)
-    #     gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY)  # 转灰度图
-    #     gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
-    #     gray_lwpCV = cv2.resize(gray_lwpCV, (500, 500))
-    #     # 用高斯滤波进行模糊处理，进行处理的原因：每个输入的视频都会因自然震动、光照变化或者摄像头本身等原因而产生噪声
-    #     # 对噪声进行平滑是为了避免在运动和跟踪时将其检测出来
-    #     gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
-    #     if avg is None:
-    #         avg = gray_lwpCV.copy().astype("float")
-    #     cv2.accumulateWeighted(gray_lwpCV, avg, 0.5)
+    for i in range(200):
+        grabbed, frame_lwpCV = camera.read()  # 读取视频流
+        dim = None
+        (hh, ww) = frame_lwpCV.shape[:2]
+        rr = 500 / float(ww)
+        dim = (500, int(hh * rr))
+        frame_lwpCV = cv2.resize(frame_lwpCV, dim, interpolation=cv2.INTER_AREA)
+        gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY)  # 转灰度图
+        gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
+        gray_lwpCV = cv2.resize(gray_lwpCV, (500, 500))
+        # 用高斯滤波进行模糊处理，进行处理的原因：每个输入的视频都会因自然震动、光照变化或者摄像头本身等原因而产生噪声
+        # 对噪声进行平滑是为了避免在运动和跟踪时将其检测出来
+        gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
+        if avg is None:
+            avg = gray_lwpCV.copy().astype("float")
+        cv2.accumulateWeighted(gray_lwpCV, avg, 0.5)
 
     print('build background')
-
-    bg = cv2.cvtColor(bg, cv2.COLOR_BGR2GRAY)
-    bg = cv2.GaussianBlur(bg, (21, 21), 0)
 
     while True:
         # if cnt % 3 != 0:
@@ -71,7 +64,7 @@ if __name__ == '__main__':
         #     continue
         start = time.time()
         grabbed, frame_lwpCV = camera.read() # 读取视频流
-        frame_lwpCV = cv2.resize(frame_lwpCV, size)
+        frame_lwpCV = cv2.resize(frame_lwpCV, (500, 500))
         gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY) # 转灰度图
         gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
 
@@ -83,7 +76,7 @@ if __name__ == '__main__':
         seconds = end - start
         if seconds < 1.0 / fps:
             time.sleep(1.0 / fps - seconds)
-        gray_lwpCV = cv2.resize(gray_lwpCV, size)
+        gray_lwpCV = cv2.resize(gray_lwpCV, (500, 500))
         # 用高斯滤波进行模糊处理，进行处理的原因：每个输入的视频都会因自然震动、光照变化或者摄像头本身等原因而产生噪声
         # 对噪声进行平滑是为了避免在运动和跟踪时将其检测出来
         gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
@@ -94,28 +87,41 @@ if __name__ == '__main__':
             pre_frame = gray_lwpCV
         else:
             # 背景移除
-            # cv2.accumulateWeighted(gray_lwpCV, avg, 0.5)
+            cv2.accumulateWeighted(gray_lwpCV, avg, 0.5)
             # cv2.convertScaleAbs(avg)
-            # img_delta = cv2.absdiff(gray_lwpCV, (pre_frame * 0.8 + avg * 0.2).astype('uint8'))
-            img_delta = cv2.absdiff(gray_lwpCV, bg)
-            thresh = cv2.threshold(img_delta, 25, 255, cv2.THRESH_BINARY)[1]
-            thresh = cv2.dilate(thresh, None, iterations=4)
+            img_delta = cv2.absdiff(gray_lwpCV, (pre_frame * 0.8 + avg * 0.2).astype('uint8'))
+            thresh = cv2.threshold(img_delta, 10, 255, cv2.THRESH_BINARY)[1]
+            thresh = cv2.dilate(thresh, None, iterations=10)
             contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             # cv2.imshow('fgmask', fgmask)
 
             # cv2.imshow('lwpCVWindow', thresh)
             for c in contours:
-                if cv2.contourArea(c) < 200:
+                if cv2.contourArea(c) < 1500:
                     continue
                 # 有移动物体
                 (x, y, w, h) = cv2.boundingRect(c)
                 cv2.rectangle(thresh, (x, y), (x + w, y + h), (255, 255, 0), 2)
                 cv2.rectangle(frame_lwpCV, (x, y), (x + w, y + h), (255, 255, 0), 2)
-                cv2.imshow('img', img_delta)
+                cv2.imshow('fgmask', img_delta)
                 cv2.imshow('lwpCVWindow', frame_lwpCV)
                 # cv2.imshow(c)
                 # # yolov5检测物体
-        # pre_frame = gray_lwpCV
+        pre_frame = gray_lwpCV
+                # # Images
+                # img = frame_lwpCV  # or file, PIL, OpenCV, numpy, multiple
+                # # Inference
+                # results = model(img)
+                # # Results
+                # # results.show()  # or .show(), .save(), .crop(), .pandas(), etc.
+                # # print(type(results.pandas().xyxy[0]['xmin'].values[0]))
+                # if len(results.pandas().xyxy[0]['xmin'].values) != 0:
+                #     cv2.rectangle(frame_lwpCV, (
+                #         int(results.pandas().xyxy[0]['xmin'].values[0]), int(results.pandas().xyxy[0]['ymin'].values[0])),
+                #         (int(results.pandas().xyxy[0]['xmax'].values[0]), int(results.pandas().xyxy[0]['ymax'].values[0])),
+                #             (255, 255, 0), 2)
+
+
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
             camera.release()

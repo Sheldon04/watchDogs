@@ -15,12 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls.static import static
 
-from djangoProject import view
+from djangoProject import view, settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/video', view.send_video), #视频监控地址
     path('api/user/login', view.login),
-    path('api/video', view.send_video),
-    path('api/tokentest', view.token_test)
-]
+    path('api/admin/getall', view.get_all_users), #获取所有用户信息
+    path('api/admin/uploadface', view.upload_face) #上传人脸照片
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

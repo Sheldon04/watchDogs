@@ -1,19 +1,34 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
-import os
-import re
+import datetime
+import json
 import time
 
 import cv2
 from django.contrib import auth
-from django.http import StreamingHttpResponse
+from django.core import serializers
+from django.http import StreamingHttpResponse, JsonResponse, HttpResponse
+
+from django.contrib.auth.models import User
+from django.urls import path
 
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+
+from datamodel import models
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
+
+
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            return json.JSONEncoder.default(self, obj)
+
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
@@ -29,16 +44,16 @@ def login(request):
     is_superuser = data.get('is_superuser')
 
     # 调用django进行用户认证
-    # 验证成功 user返回<class 'django.contrib.auth.dataModels.User'>
+    # 验证成功 user返回<class 'django.contrib.auth.models.User'>
     # 验证失败 user返回None
     user = auth.authenticate(username=username, password=password)
-    print("user",user)
+    print("user", user)
     if user == None:
         result = False
         errorInfo = u'用户名或密码错误'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
 
-    if user.is_superuser == False and is_superuser == '1':
+    if user.is_superuser == False and is_superuser == '0':
         result = False
         errorInfo = u'权限不足'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
@@ -53,32 +68,44 @@ def login(request):
     token = tokenObj.key
     return Response({"result": result, "detail": {'token': token}, "errorInfo": errorInfo})
 
+
 def gen(d):
     while True:
         for frame, _, _, _ in d.run():
-            time.sleep(.001)
-            flag, buffer = cv2.imencode('.jpeg', frame)
+            time.sleep(.1)
+            cv2.imwrite('./1.jpg', frame)
+            flag, buffer = cv2.imencode('.jpg', frame)
             if not flag:
                 continue
-            # print('send video')
-            yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+            print('send video')
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n\r\n')
+
 
 @api_view(['GET'])
-@permission_classes((AllowAny,))
-@authentication_classes(())
 def send_video(request):
     d = Detector(1)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
-@api_view(['GET'])
-@permission_classes((AllowAny,))
-@authentication_classes(())
-def get_all_attack_record(request):
-    pass
 
 @api_view(['GET'])
-# @permission_classes((AllowAny,))
-# @authentication_classes(())
-def token_test(request):
-    return Response({"result": "token"})
+def get_all_users(request):
+    userList = User.objects.values("username", "email", "is_superuser", "last_login")
+    response_data = json.dumps(list(userList.values("username", "email", "is_superuser", "last_login")),
+                               cls=DateEncoder)
+    return JsonResponse(json.loads(response_data), safe=False)
+
+@api_view(['POST'])
+#@permission_classes((AllowAny,))
+def upload_face(request):
+    img = request.POST.get('face')
+    #user = request.FILES.get('photo').name
+    #img = request.data.get('face_img')
+    phone = request.POST.get('phone')
+    print(phone)
+    print(img)
+    img_model = models.mypicture(
+        photo=img,  # 拿到图片
+        phone=phone # 拿到图片的名字
+    )
+    img_model.save()  # 保存图片
+    return HttpResponse('/media/photos/' + img.name)
