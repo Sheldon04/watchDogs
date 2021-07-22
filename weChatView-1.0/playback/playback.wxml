@@ -1,0 +1,28 @@
+<view class="page" data-weui-theme="{{theme}}">
+  <view class="weui-cells weui-cells_after-title">
+    <van-cell title="选择具体日期" size="large"  value="{{ date }}" bind:click="onDisplay" />
+<van-calendar title="选择日期" show="{{ show }}" bind:close="onClose" bind:confirm="onConfirm" />
+  </view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell weui-cell_active weui-cell_select weui-cell_select-after">
+              <view class="weui-cell__hd">
+                    <view class="weui-label">选择摄像头</view>
+                </view>
+                <view class="weui-cell__bd">
+                    <picker bindchange="bindCountryChange" value="{{countryIndex}}" range="{{countries}}">
+                        <view class="weui-select weui-select_in-select-after">{{countries[countryIndex]}}</view>
+                    </picker>
+                </view>
+            </view>
+        </view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="page__bd">
+        <view class="section__ctn">
+          <image style="width: 24rem; height: 13rem; background-color: #eeeeee;" mode="{{item.mode}}" src="{{src}}"></image>
+        </view>
+    </view>
+        </view>
+        <view class="weui-btn-area">
+            <button class="weui-btn" type="primary" bindtap="showTopTips">确定</button>
+        </view>
+</view>
