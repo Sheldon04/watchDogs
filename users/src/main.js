@@ -6,7 +6,7 @@ import router from './router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import axios from 'axios'
-
+import api from './router/api'
 import VideoPlayer from 'vue-video-player'
 import 'videojs-flash'
 // import 'videojs-contrib-hls'// 不确定是否需要了
@@ -16,6 +16,7 @@ Vue.use(VideoPlayer)
 
 Vue.use(ElementUI)
 Vue.prototype.$http = axios
+Vue.prototype.localAPI = api.localAPI
 
 Vue.config.productionTip = false
 

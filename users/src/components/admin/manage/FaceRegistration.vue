@@ -74,17 +74,6 @@
         </el-aside>
         <el-main class="main">
           <el-form ref="form" :model="form" label-width="130px" class="form">
-            <el-form-item label="上传头像">
-              <el-upload
-                class="avatar-uploader"
-                action="http://127.0.0.1:8000/api/admin/uploadface"
-                :show-file-list="false"
-                :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload">
-                <img v-if="imageUrl" :src="imageUrl" class="avatar">
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-              </el-upload>
-            </el-form-item>
             <el-form-item label="注册人姓名">
               <el-input v-model="form.name"></el-input>
             </el-form-item>
@@ -109,6 +98,24 @@
             <el-form-item label="是否超级管理员">
               <el-switch v-model="form.is_superuser"></el-switch>
             </el-form-item>
+            <el-form-item label="上传头像">
+              <el-upload
+                class="upload-demo"
+                drag
+                :limit="1"
+                :action="uploadURL"
+                :headers="headers"
+                :on-remove="removeChange"
+                :on-success="handleAvatarSuccess"
+                :on-error="uploadError"
+                :before-upload="beforeAvatarUpload"
+                :auto-upload="false">
+                <i class="el-icon-upload"></i>
+                <img v-if="licenseImageUrl" :src="licenseImageUrl" width="" height="">
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+              <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传</el-button>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="onSubmit">立即注册</el-button>
             </el-form-item>
@@ -124,19 +131,27 @@ import axios from 'axios'
 
 export default {
   name: 'FaceRegistration',
+  computed: {
+    headers () {
+      return {
+        'Authorization': 'Token ' + localStorage.getItem('token')
+      }
+    }
+  },
   data () {
     return {
       activeIndex: this.$route.path,
+      uploadURL: this.localAPI + 'admin/uploadface',
       imgSrc: require('../../../assets/img3.jpg'),
-      imageUrl: '',
+      licenseImageUrl: '',
       form: {
-        name: '',
+        username: '',
         phone: '',
         region: '',
         date1: '',
         date2: '',
         is_superuser: false,
-        face_img: ''
+        file: ''
       }
     }
   },
@@ -146,26 +161,43 @@ export default {
       this.$router.push(key)
     },
     handleAvatarSuccess (res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw)
+      let _this = this
+      _this.licenseImageUrl = res.url
     },
     beforeAvatarUpload (file) {
+      // eslint-disable-next-line no-redeclare
       const isJPG = file.type === 'image/jpeg'
       const isLt10M = file.size / 1024 / 1024 < 10
-
+      if (this.form.phone === '') {
+        this.$message.error('请先输入手机号')
+        return false
+      }
       if (!isJPG) {
         this.$message.error('上传头像图片只能是 JPG 格式!')
       }
       if (!isLt10M) {
         this.$message.error('上传头像图片大小不能超过 10MB!')
       }
+      this.form.file = file
       return isJPG && isLt10M
     },
-    onSubmit () {
-      const url = 'http://127.0.0.1:8000/api/admin/uploadface'
-      const auth = 'Token ' + localStorage.getItem('token')
-      const header = {'Authorization': auth}
-      axios.post(url, this.form, {'headers': header}).then(response => {
-        console.log(response.data.result)
+    // eslint-disable-next-line handle-callback-err
+    uploadError (err, file, filelist) {
+      this.$message.error('上传失败')
+    },
+    removeChange (file, fileList) {
+      console.log('你要移除的文件为', file.name)
+    },
+    // eslint-disable-next-line handle-callback-err
+    submitUpload () {
+      let formData = new FormData()
+      formData.append('phone', this.form.phone)
+      formData.append('file', this.form.file)
+      axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
+        this.$message.success('上传失败')
+        // eslint-disable-next-line handle-callback-err
+      }).catch(err => {
+        this.$message.error('上传失败')
       })
     }
   }
