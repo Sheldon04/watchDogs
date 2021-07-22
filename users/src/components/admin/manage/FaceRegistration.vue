@@ -108,6 +108,7 @@
                 :on-remove="removeChange"
                 :on-success="handleAvatarSuccess"
                 :on-error="uploadError"
+                :on-change="fileChange"
                 :before-upload="beforeAvatarUpload"
                 :auto-upload="false">
                 <i class="el-icon-upload"></i>
@@ -164,6 +165,9 @@ export default {
       let _this = this
       _this.licenseImageUrl = res.url
     },
+    fileChange (file) {
+      this.form.file = file
+    },
     beforeAvatarUpload (file) {
       // eslint-disable-next-line no-redeclare
       const isJPG = file.type === 'image/jpeg'
@@ -178,7 +182,6 @@ export default {
       if (!isLt10M) {
         this.$message.error('上传头像图片大小不能超过 10MB!')
       }
-      this.form.file = file
       return isJPG && isLt10M
     },
     // eslint-disable-next-line handle-callback-err
@@ -192,7 +195,9 @@ export default {
     submitUpload () {
       let formData = new FormData()
       formData.append('phone', this.form.phone)
-      formData.append('file', this.form.file)
+      formData.append('face', this.form.file)
+      console.log(formData.get('face'))
+      console.log(formData.get('phone'))
       axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
         this.$message.success('上传失败')
         // eslint-disable-next-line handle-callback-err
