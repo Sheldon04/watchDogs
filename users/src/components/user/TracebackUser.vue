@@ -54,10 +54,11 @@
               </td>
             </tr>
           </table>
-          <el-calendar :first-day-of-week=7>
+          <el-calendar :first-day-of-week=7 @pick="pick" @date-change="dateChange">
             <template
               slot="dateCell"
               slot-scope="{date, data}">
+              <div v-if="data.isSelected">{{handle_click(data.day.split('-'))}}</div>
               <p>
                 {{ data.day.split('-').slice(1).join('-') }}
 <!--                v-if="data.day==='2021-07-22'||data.day=='2021-07-23'"-->
@@ -89,7 +90,7 @@ export default {
       imgSrc: require('../../assets/img3.jpg'),
       options: [],
       value: '',
-      cur_month: 0,
+      cur_month: 9,
       month_invasion_data: {
         '12': 2,
         '23': 5,
@@ -107,23 +108,38 @@ export default {
     set_cur_month () {
       let nowDate = new Date()
       this.cur_month = nowDate.getMonth() + 1
+      console.log(nowDate)
+    },
+    handle_click (date) {
+      if (parseInt(date[1]) !== this.cur_month) {
+        this.cur_month = parseInt(date[1])
+        console.log('update month: ', this.cur_month)
+      //  TODO 更新当前月入侵记录
+      }
+      if (this.month_invasion_data[date[2]] > 0) {
+        console.log('show invasion')
+      //  TODO 显示当天入侵详细记录
+      }
     }
   },
   mounted () {
     this.$nextTick(() => {
-      // 点击前一个月
-      let prevBtn = document.querySelector(
-        '.el-calendar__button-group .el-button-group>button:nth-child(1)')
-      prevBtn.addEventListener('click', () => {
-        console.log(this.cur_month)
+      // 点击上个月
+      let prevBtn1 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(1)')
+      prevBtn1.addEventListener('click', () => {
+        console.log('上个月')
+        this.cur_month = (this.cur_month + 11) % 12
       })
-    })
-    this.$nextTick(() => {
-      // 点击后一个月
-      let prevBtn = document.querySelector(
-        '.el-calendar__button-group .el-button-group>button:last-child')
-      prevBtn.addEventListener('click', () => {
-        console.log(this.cur_month)
+      // 点击今天
+      let prevBtn2 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(2)')
+      prevBtn2.addEventListener('click', () => {
+        console.log('今天')
+      })
+      // 点击下个月
+      let prevBtn3 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(3)')
+      prevBtn3.addEventListener('click', () => {
+        console.log('下个月')
+        this.cur_month = this.cur_month % 12 + 1
       })
     })
     this.set_cur_month()
