@@ -167,7 +167,7 @@
 
 <script>
 export default {
-  name: 'Monitor',
+  name: 'WhiteList',
   data () {
     return {
       activeIndex: this.$route.path,

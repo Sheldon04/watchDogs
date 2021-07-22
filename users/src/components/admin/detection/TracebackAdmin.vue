@@ -106,7 +106,7 @@
 
 <script>
 export default {
-  name: 'Monitor',
+  name: 'TracebackAdmin',
   data () {
     return {
       activeIndex: this.$route.path,

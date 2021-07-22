@@ -105,7 +105,7 @@
 
 <script>
 export default {
-  name: 'Monitor',
+  name: 'AttackInfoAdmin',
   data () {
     return {
       activeIndex: this.$route.path,

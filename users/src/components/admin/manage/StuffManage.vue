@@ -144,9 +144,9 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'Monitor',
+  name: 'StuffManage',
   mounted () {
-    const url = 'http://127.0.0.1:8000/api/user/getall'
+    const url = 'http://127.0.0.1:8000/api/admin/getall'
     const auth = 'Token ' + localStorage.getItem('token')
     const header = {'Authorization': auth}
     axios.get(url, {'headers': header}).then(response => {

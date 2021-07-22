@@ -82,7 +82,7 @@
 
 <script>
 export default {
-  name: 'Monitor',
+  name: 'Segmentation',
   data () {
     return {
       activeIndex: this.$route.path,

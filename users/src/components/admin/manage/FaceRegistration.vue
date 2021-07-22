@@ -77,7 +77,7 @@
             <el-form-item label="上传头像">
               <el-upload
                 class="avatar-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="http://127.0.0.1:8000/api/admin/uploadface"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload">
@@ -88,7 +88,7 @@
             <el-form-item label="注册人姓名">
               <el-input v-model="form.name"></el-input>
             </el-form-item>
-            <el-form-item label="手机号">
+            <el-form-item label="手机">
               <el-input v-model="form.phone"></el-input>
             </el-form-item>
             <el-form-item label="准入区域">
@@ -120,8 +120,10 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
-  name: 'Monitor',
+  name: 'FaceRegistration',
   data () {
     return {
       activeIndex: this.$route.path,
@@ -157,6 +159,14 @@ export default {
         this.$message.error('上传头像图片大小不能超过 10MB!')
       }
       return isJPG && isLt10M
+    },
+    onSubmit () {
+      const url = 'http://127.0.0.1:8000/api/admin/uploadface'
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post(url, this.form, {'headers': header}).then(response => {
+        console.log(response.data.result)
+      })
     }
   }
 }

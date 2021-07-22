@@ -178,7 +178,7 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'Monitor',
+  name: 'AttackListAdmin',
   mounted () {
     axios.get('http://127.0.0.1:8000/api/user/attacklistuser/all').then(response => {
       this.tableData = response.data
