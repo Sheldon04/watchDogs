@@ -27,13 +27,17 @@ class Detector:
             self.camera = cv2.VideoCapture(video)
             self.camera.set(6, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
         elif choice == 1:
-            file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
+            file_path = 'E:\\watchDogs\\djangoProject\\monitor\\data\\road.kux'
             # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
             self.camera = cv2.VideoCapture(file_path)
         else:
             video = "http://47.106.148.74:80/tv_file/test.m3u8"  # 此处@后的ipv4 地址需要改为app提供的地址
             # video = "http://admin:admin@192.168.43.1:8081"
             self.camera = cv2.VideoCapture(video)
+
+        self.bg = cv2.imread('./data/back.jpg')
+        self.bg = cv2.cvtColor(self.bg, cv2.COLOR_BGR2GRAY)
+        self.bg = cv2.GaussianBlur(self.bg, (21, 21), 0)
 
         # 判断视频是否打开
         if self.camera.isOpened():
@@ -65,7 +69,7 @@ class Detector:
         # 测试用,查看视频size
         size = (int(self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
                 int(self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        # print('size:' + repr(size))
+        print('size:' + repr(size))
 
         fps = 240  # 帧率
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
@@ -144,18 +148,98 @@ class Detector:
         self.camera.release()
         cv2.destroyAllWindows()
 
+    def run2(self):
+        flag = False
+        # 测试用,查看视频size
+        size = (int(self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                int(self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        print('size:' + repr(size))
+
+        fps = 240  # 帧率
+        motion_body_cnt = 0  # 一帧中的移动物体
+        motion_frame_cnt = 0  # 出现移动物体的帧数
+        pre_motion_num = 0
+        is_first_invade = True
+        is_invade = False
+        while True:
+            start = time.time()
+            grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
+            motion_body_cnt = 0
+            if not grabbed:
+                break
+            end = time.time()
+            invade_time = None
+            return_flag = False
+            # 运动检测部分
+            seconds = end - start
+            if seconds < 1.0 / fps:
+                time.sleep(1.0 / fps - seconds)
+
+            gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY)  # 转灰度图
+            gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
+            img_delta = cv2.absdiff(gray_lwpCV, self.bg)
+            thresh = cv2.threshold(img_delta, 25, 255, cv2.THRESH_BINARY)[1]
+            thresh = cv2.dilate(thresh, None, iterations=4)
+            # 在完成对帧的灰度转换和平滑后，就可计算与背景帧的差异，并得到一个差分图（different map）
+            # 还需要应用阈值来得到一幅黑白图像，并通过下面代码来膨胀（dilate）图像，从而对孔（hole）和缺陷（imperfection）进行归一化处理
+            # 背景移除
+            contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if len(contours) - pre_motion_num > 20:
+                # TODO 按照物体移动速度
+                pass
+            is_motion = False
+            for c in contours:
+                if cv2.contourArea(c) < 500 or cv2.contourArea(c) > 50000:
+                    continue
+                motion_body_cnt += 1
+                is_motion = True
+                # 有移动物体
+                (x, y, w, h) = cv2.boundingRect(c)
+                # cv2.rectangle(fgmask, (x, y), (x + w, y + h), (255, 255, 0), 2)
+                cv2.rectangle(frame_lwpCV, (x, y), (x + w, y + h), (0, 100, 255), 2)
+
+                if motion_frame_cnt > self.conf['min_motion_frames'] and self.conf['enable_save_img']:
+                    is_invade = True
+                    invade_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+                    self.start_video(size, invade_time)
+                    self.video_writer.write(frame_lwpCV)
+                    # TODO 测试后删除
+                    if motion_body_cnt > 500:
+                        self.conf['enable_save_img'] = False
+                        self.video_writer.release()
+                        print('stop')
+
+            if not is_motion:
+                # print('invade stop')
+                self.stop_video()
+                is_first_invade = True
+            else:
+                motion_frame_cnt += 1
+                if is_invade and is_first_invade:
+                    print('invade start')
+                    is_first_invade = False
+                    is_invade = False
+                    return_flag = True
+
+            yield frame_lwpCV, motion_body_cnt, return_flag, invade_time
+
+            pre_motion_num = motion_body_cnt
+            # pre_frame = gray_lwpCV
+
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                self.camera.release()
+                cv2.destroyAllWindows()
+                break
+        # When everything done, release the capture
+        self.camera.release()
+        cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     d = Detector(1)
-    for test, mask, is_invade, invade_time in d.run():
+    for test, mask, is_invade, invade_time in d.run2():
         cv2.imshow('test', test)
         retval, buffer = cv2.imencode('.jpg', test)
-        cv2.imshow('jpeg', buffer)
         pic_str = base64.b64encode(buffer)
-        print(type(test))
-        print(type(buffer))
-        # print(type(pic_str))
-        # print(type(buffer))
-        # cv2.imshow('img', img)
         if is_invade:
             print(invade_time)
