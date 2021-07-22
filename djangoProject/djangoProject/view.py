@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
+import os
+import re
 import time
 
 import cv2
@@ -27,7 +29,7 @@ def login(request):
     is_superuser = data.get('is_superuser')
 
     # 调用django进行用户认证
-    # 验证成功 user返回<class 'django.contrib.auth.models.User'>
+    # 验证成功 user返回<class 'django.contrib.auth.dataModels.User'>
     # 验证失败 user返回None
     user = auth.authenticate(username=username, password=password)
     print("user",user)
@@ -36,7 +38,7 @@ def login(request):
         errorInfo = u'用户名或密码错误'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
 
-    if user.is_superuser == False and is_superuser == '0':
+    if user.is_superuser == False and is_superuser == '1':
         result = False
         errorInfo = u'权限不足'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
@@ -54,18 +56,23 @@ def login(request):
 def gen(d):
     while True:
         for frame, _, _, _ in d.run():
-            time.sleep(.1)
-            cv2.imwrite('./1.jpg', frame)
-            flag, buffer = cv2.imencode('.jpg', frame)
+            time.sleep(.001)
+            flag, buffer = cv2.imencode('.jpeg', frame)
             if not flag:
                 continue
-            print('send video')
-            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n\r\n')
+            # print('send video')
+            yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
 @api_view(['GET'])
 @permission_classes((AllowAny,))
 @authentication_classes(())
 def send_video(request):
-    d = Detector(1)
-
+    d = Detector(0)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
+
+@api_view(['GET'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def get_all_attack_record(request):
+    pass

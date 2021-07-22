@@ -73,7 +73,92 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://100.58.198.227:8081/video" width="1080" height="720">
+          <el-table
+            class="main_table"
+            :data="tableData"
+            stripe
+            style="width: 1000px"
+            :default-sort = "{prop: 'id', order: 'descending'}">
+            <el-table-column
+              prop="id"
+              label="ID"
+              type="index"
+              sortable>
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="姓名"
+              sortable>
+            </el-table-column>
+            <el-table-column
+              prop="is_superuser"
+              label="是否为管理员"
+              :filters="[{ text: '是', value: '是' }, { text: '否', value: '否' }]"
+              :filter-method="filterHandler">
+            </el-table-column>
+            <el-table-column
+              prop="face_info"
+              label="人脸信息">
+              <template slot-scope="scope">
+                <el-button type="text" size="small" inline>查看</el-button>
+                <el-button type="text" size="small" inline>更新</el-button>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="权限信息"
+              type="expand"
+              width="80">
+              <template slot-scope="props">
+                <el-table
+                  class="detail_table"
+                  :data="props.row.permission_data"
+                  style="width: 500px">
+                  <el-table-column
+                    label="区域"
+                    prop="area">
+                  </el-table-column>
+                  <el-table-column
+                    label="时间"
+                    prop="time">
+                  </el-table-column>
+                  <el-table-column
+                    align="center">
+                    <template slot="header" slot-scope="scope">
+                      <el-button type="primary" size="mini">增加</el-button>
+                    </template>
+                    <template slot-scope="scope">
+                      <el-button type="text" size="small" inline>删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </template>
+            </el-table-column>
+            <el-table-column
+              align="center"
+              width="300">
+              <template slot="header" slot-scope="scope">
+                <div>
+                  <div class="search">
+                    <el-input
+                      v-model="search"
+                      size="mini"
+                      prefix-icon="el-icon-search"
+                      placeholder="输入关键字搜索"/>
+                  </div>
+                  <div class="search"><el-button icon="el-icon-search" size="mini" circle></el-button></div>
+                </div>
+              </template>
+              <template slot-scope="scope">
+                <el-button
+                  size="mini"
+                  @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-main>
       </el-container>
     </div>
@@ -86,7 +171,52 @@ export default {
   data () {
     return {
       activeIndex: this.$route.path,
-      imgSrc: require('../../../assets/img3.jpg')
+      imgSrc: require('../../../assets/img3.jpg'),
+      search: '',
+      tableData: [{
+        name: '王小虎',
+        is_superuser: '是',
+        permission_data: [{
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }, {
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }]
+      }, {
+        name: '王小虎',
+        is_superuser: '是',
+        last_login: '2021-07-20 13:14:59',
+        permission_data: [{
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }, {
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }]
+      }, {
+        name: '小虎',
+        is_superuser: '否',
+        last_login: '2021-07-20 13:14:59',
+        permission_data: [{
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }, {
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }]
+      }, {
+        name: '王小虎',
+        is_superuser: '是',
+        last_login: '2020-07-20 13:14:59',
+        permission_data: [{
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }, {
+          area: '仓库',
+          time: '10:00 - 16:00'
+        }]
+      }]
     }
   },
   methods: {
@@ -106,12 +236,28 @@ export default {
 .main {
   left: 200px;
   top: 80px;
-  position: absolute;
+  /*position: absolute;*/
+  margin: 0 auto;
 }
 
 .user-menu {
   left: 50px;
   top: 5px;
+}
+
+.detail_table {
+  left: 20%;
+}
+
+.search {
+  display: inline-block;
+}
+
+.main_table {
+  margin: 0 auto;
+  position: absolute;
+  top: 15%;
+  left: 24%;
 }
 
 </style>
