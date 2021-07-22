@@ -29,6 +29,7 @@
          </el-menu>
        </el-aside>
        <el-main class="main">
+         <el-button @click="dosomething()" type="primary">主要按钮</el-button>
          <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://127.0.0.1:8000/api/video" type="video/mp4" width="1080" height="720">
        </el-main>
      </el-container>
@@ -37,6 +38,10 @@
 </template>
 
 <script>
+// import axios from 'axios'
+
+import axios from 'axios'
+
 export default {
   name: 'Monitor',
   data () {
@@ -49,6 +54,16 @@ export default {
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
       this.$router.push(key)
+    },
+    dosomething () {
+      // console.log('test')
+      const url = 'http://127.0.0.1:8000/api/tokentest'
+      // // 从localStorage获取到登录时保持的token
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.get(url, {'headers': header}).then(response => {
+        console.log(response.data.result)
+      })
     }
   }
 }

@@ -3,7 +3,7 @@ from cv2 import WINDOW_AUTOSIZE
 
 cv2.namedWindow("camera",1)
 #开启ip摄像头
-video="http://admin:123456@172.30.95.184:8081/video"   #此处@后的ipv4 地址需要改为app提供的地址
+video="http://47.106.148.74:80/tv_file/test.m3u8"   #此处@后的ipv4 地址需要改为app提供的地址
 #video = "http://admin:admin@192.168.43.1:8081"
 cap =cv2.VideoCapture(video)
 while True:

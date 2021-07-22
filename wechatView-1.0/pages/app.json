@@ -1,0 +1,58 @@
+{
+  "pages": [    
+    "pages/login/login",
+    "pages/registerFirst/registerFirst",
+    "pages/loginPhone/loginPhone",
+    "pages/monitor/monitor",
+    "pages/playback/playback",
+    "pages/record/record",
+    "pages/statistical/statistical",
+    "pages/my/my"
+  ],
+  "usingComponents": {
+    "van-calendar":"/miniprogram_npm/@vant/weapp/calendar/index"
+  },
+  "window": {
+    "backgroundColor": "#F6F6F6",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#F6F6F6",
+    "navigationBarTitleText": "WatchDogs",
+    "navigationBarTextStyle": "black",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "pages/monitor/monitor",
+        "text": "实时监控",
+        "iconPath": "image/_monitor.png",
+        "selectedIconPath": "image/monitor.png"
+      },
+      {
+        "pagePath": "pages/playback/playback",
+        "text": "入侵回放",
+        "iconPath": "image/_play.png",
+        "selectedIconPath": "image/play.png"
+      },
+      {
+        "pagePath": "pages/record/record",
+        "text": "查看记录",
+        "iconPath": "image/_record.png",
+        "selectedIconPath": "image/record.png"
+      },
+      {
+        "pagePath": "pages/statistical/statistical",
+        "text": "入侵统计",
+        "iconPath": "image/_chart.png",
+        "selectedIconPath": "image/chart.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的",
+        "iconPath": "image/_my.png",
+        "selectedIconPath": "image/my.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

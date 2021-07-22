@@ -26,3 +26,15 @@ new Vue({
   components: { App },
   template: '<App/>'
 })
+
+router.beforeEach((to, from, next) => {
+  console.log('from: ', from.fullPath.split('/'))
+  console.log('to: ', to.fullPath)
+  if (from.fullPath === '/') {
+    next(true)
+  } else if (to.fullPath.split('/')[1] !== from.fullPath.split('/')[1]) {
+    next(false)
+  } else {
+    next(true)
+  }
+})

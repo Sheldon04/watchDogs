@@ -68,7 +68,7 @@ def gen(d):
 @permission_classes((AllowAny,))
 @authentication_classes(())
 def send_video(request):
-    d = Detector(0)
+    d = Detector(1)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
 @api_view(['GET'])
@@ -76,3 +76,9 @@ def send_video(request):
 @authentication_classes(())
 def get_all_attack_record(request):
     pass
+
+@api_view(['GET'])
+# @permission_classes((AllowAny,))
+# @authentication_classes(())
+def token_test(request):
+    return Response({"result": "token"})
