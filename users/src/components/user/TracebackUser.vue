@@ -114,6 +114,11 @@ export default {
       if (parseInt(date[1]) !== this.cur_month) {
         this.cur_month = parseInt(date[1])
         console.log('update month: ', this.cur_month)
+        this.month_invasion_data = {
+          '08': 1,
+          '09': 10,
+          '24': 2
+        }
       //  TODO 更新当前月入侵记录
       }
       if (this.month_invasion_data[date[2]] > 0) {
