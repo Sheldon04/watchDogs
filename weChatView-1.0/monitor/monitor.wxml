@@ -1,0 +1,42 @@
+<view class="page" data-weui-theme="{{theme}}">
+
+
+<view class="weui-cells weui-cells_after-title">
+    <view class="weui-cell weui-cell_vcode">
+        <view class="weui-cell__hd">
+            <view class="weui-label">WatchDogs</view>
+        </view>
+        <view class="weui-cell__bd">
+                    <input class="weui-input" placeholder-class="weui-input__placeholder" placeholder="      " />
+                </view>
+
+        <view class="weui-cell__ft">
+            <view class="weui-vcode-btn" bindtap="openIOS">添加设备</view>
+        </view>
+    </view>
+    <view class="page__bd">
+        <view class="section__ctn">
+          <image style="width: 24rem; height: 13rem; background-color: #eeeeee;" mode="{{item.mode}}" src="{{src}}"></image>
+        </view>
+    </view>
+    </view>
+
+    <view wx:if="{{showIOSDialog}}" class="fadeIn" bindtap="close">
+        <view class="weui-mask"></view>
+        <view class="weui-actionsheet weui-actionsheet_toggle">
+            <view class="weui-actionsheet__title">
+                <view class="weui-actionsheet__title-text">添加设备</view>
+            </view>
+            <view class="weui-actionsheet__menu">
+                <view class="weui-actionsheet__cell">手动添加</view>
+                <view class="weui-actionsheet__cell">二维码添加</view>
+                <view class="weui-actionsheet__cell weui-actionsheet__cell_warn">区域网内添加</view>
+            </view>
+            <view class="weui-actionsheet__action">
+                <view class="weui-actionsheet__cell">取消</view>
+            </view>
+        </view>
+
+    </view>
+</view>
+
