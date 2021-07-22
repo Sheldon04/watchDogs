@@ -74,7 +74,7 @@
         </el-aside>
         <el-main class="main">
           <el-table
-            :data="tableData"
+            :data="tableData.filter(data => !search || data.username.toLowerCase().includes(search.toLowerCase()))"
             stripe
             style="width: 1200px"
             :default-sort = "{prop: 'id', order: 'descending'}">
@@ -86,7 +86,7 @@
               sortable>
             </el-table-column>
             <el-table-column
-              prop="name"
+              prop="username"
               label="姓名"
               width="200"
               sortable>
@@ -142,34 +142,24 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'Monitor',
+  mounted () {
+    const url = 'http://127.0.0.1:8000/api/user/getall'
+    const auth = 'Token ' + localStorage.getItem('token')
+    const header = {'Authorization': auth}
+    axios.get(url, {'headers': header}).then(response => {
+      console.log(response.data.result)
+      this.tableData = response.data
+    })
+  },
   data () {
     return {
       search: '',
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
-      tableData: [{
-        name: '王小虎',
-        email: '123456@qq.com',
-        is_superuser: '是',
-        last_login: '2021-07-20 13:14:59'
-      }, {
-        name: '王小虎',
-        email: '123456@qq.com',
-        is_superuser: '是',
-        last_login: '2021-07-20 13:14:59'
-      }, {
-        name: '小虎',
-        email: '123456@qq.com',
-        is_superuser: '否',
-        last_login: '2021-07-20 13:14:59'
-      }, {
-        name: '王小虎',
-        email: '123456@qq.com',
-        is_superuser: '是',
-        last_login: '2020-07-20 13:14:59'
-      }]
+      tableData: []
     }
   },
   methods: {
