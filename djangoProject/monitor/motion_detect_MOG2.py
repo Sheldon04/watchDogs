@@ -23,17 +23,13 @@ class Detector:
         self.video_writer = None
         if choice == 0:
             # video="http://admin:admin@192.168.43.1:8081"   #此处@后的ipv4 地址需要改为app提供的地址
-            video = "http://admin:123456@10.166.155.20:8081"
+            video = "http://admin:123456@100.58.198.227:8081"
             self.camera = cv2.VideoCapture(video)
             self.camera.set(6, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-        elif choice == 1:
+        else:
             file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
             # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
             self.camera = cv2.VideoCapture(file_path)
-        else:
-            video = "http://47.106.148.74:80/tv_file/test.m3u8"  # 此处@后的ipv4 地址需要改为app提供的地址
-            # video = "http://admin:admin@192.168.43.1:8081"
-            self.camera = cv2.VideoCapture(video)
 
         # 判断视频是否打开
         if self.camera.isOpened():
@@ -67,7 +63,7 @@ class Detector:
                 int(self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
         # print('size:' + repr(size))
 
-        fps = 240  # 帧率
+        fps = 30  # 帧率
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
         # self.fgbg = cv2.bgsegm.createBackgroundSubtractorGMG()
         self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))

@@ -21,6 +21,6 @@ from djangoProject import view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/user/login', view.login),
-    path('api/video', view.send_video),
-    path('api/tokentest', view.token_test)
+    path('api/user/getall', view.get_all_users),
+    path('api/video', view.send_video)
 ]
