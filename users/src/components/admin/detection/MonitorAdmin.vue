@@ -73,7 +73,7 @@
          </el-menu>
        </el-aside>
        <el-main class="main">
-         <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://100.58.198.227:8081/video" width="1080" height="720">
+         <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://10.166.155.20:8081/video" width="1080" height="720">
        </el-main>
      </el-container>
    </div>

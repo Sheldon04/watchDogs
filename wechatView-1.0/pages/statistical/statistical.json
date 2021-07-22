@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "van-image":  "/miniprogram_npm/@vant/weapp/image/index" 
+  },
+  "navigationBarTitleText": "入侵统计"
+}
