@@ -71,6 +71,7 @@ def login(request):
         tokenObj = Token.objects.create(user=user)
     # 获取token字符串
     token = tokenObj.key
+    user.last_login = datetime.datetime.now()
     return Response({"result": result, "detail": {'token': token}, "errorInfo": errorInfo})
 
 
