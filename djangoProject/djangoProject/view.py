@@ -145,3 +145,25 @@ def get_specific_records(request):
     response_data =json.dumps(
         list(invation_list.values("date", "time", "level", "camera_id", 'area', 'invation_num')), cls=DateEncoder)
     return JsonResponse(json.loads(response_data), safe=False)
+
+
+#获取一个月的入侵记录
+#request: Year-month
+#return [{'day1':count1},{'day2':count2},...]
+#url:'api/invationrecord/getmonth'
+def get_month_records(request):
+    month_choose_str = request.GET.get('month')
+    month_choose = datetime.datetime.strptime(month_choose_str,'%Y-%m')
+    invation_m_list1 = invationRecord.objects.filter(date__year=month_choose.year)
+    invation_m_list =invation_m_list1.filter(date__month=month_choose.month)
+    invation_list=[]
+
+    for i in range(1,31):
+        invation_d_list =invation_m_list.filter(date__day=i)
+        if invation_d_list.count() !=0:
+            dict={i:invation_d_list.count()}
+            invation_list.append(dict)
+
+    response_data =json.dumps(list(invation_list),cls=DateEncoder,indent= 4)
+
+    return JsonResponse(json.loads(response_data), safe=False)
