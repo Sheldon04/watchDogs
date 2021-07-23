@@ -73,7 +73,7 @@ def login(request):
 def gen(d):
     while True:
         for frame, _, _, _ in d.run():
-            time.sleep(.1)
+            time.sleep(.001)
             cv2.imwrite('./1.jpg', frame)
             flag, buffer = cv2.imencode('.jpg', frame)
             if not flag:
@@ -115,9 +115,8 @@ def upload_face(request):
     print(img_model.photo.name)
     return HttpResponse('media/' + img_model.photo.name)
 
-@api_view(['POST'])
+@api_view(['GET'])
 #获取某一天某段时间内的入侵记录
-
 def get_specific_records(request):
 
     date_choose_str= request.GET.get('date')
