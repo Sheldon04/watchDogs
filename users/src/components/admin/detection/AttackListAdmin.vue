@@ -180,21 +180,29 @@ import axios from 'axios'
 export default {
   name: 'AttackListAdmin',
   mounted () {
-    axios.get('http://127.0.0.1:8000/api/admin/attacklistuser/all').then(response => {
+    const auth = 'Token ' + localStorage.getItem('token')
+    const header = {'Authorization': auth}
+    axios.get('http://127.0.0.1:8000/api/admin/attacklistuser/all', {'headers': header}).then(response => {
       this.tableData = response.data
     })
   },
   methods: {
     async search () {
-      let keywords = []
-      keywords.push(this.date)
-      if (this.timespan.length !== 0) {
-        keywords = keywords.concat(this.timespan)
-      }
-      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', keywords).then(response => {
+      // let keywords = []
+      // keywords.push(this.date)
+      // if (this.timespan.length !== 0) {
+      //   keywords = keywords.concat(this.timespan)
+      // }
+      let formData = new FormData()
+      formData.append('date', this.date) // 2021-7-10
+      formData.append('time_span', this.timespan) // 8:00:15,9:00:00
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', formData, {'headers': header}).then(response => {
         this.tableData = response.data
       })
-      console.log(keywords)
+      console.log(formData.get('date'))
+      console.log(formData.get('time_span'))
     },
     tableRowClassName ({row, rowIndex}) {
       if (row.level === '严重') {

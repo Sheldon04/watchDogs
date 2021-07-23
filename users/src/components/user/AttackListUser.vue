@@ -162,7 +162,7 @@ export default {
         this.tableData = response.data
       })
       console.log(formData.get('date'))
-      console.log(formData.get('timespan'))
+      console.log(formData.get('time_span'))
     },
     tableRowClassName ({row, rowIndex}) {
       if (row.level === '严重') {
