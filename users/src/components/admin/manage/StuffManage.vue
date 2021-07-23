@@ -98,6 +98,7 @@
               width="200">
             </el-table-column>
             <el-table-column
+              :formatter = "formatter"
               prop="is_superuser"
               label="是否为管理员"
               width="200"
@@ -166,6 +167,15 @@ export default {
     }
   },
   methods: {
+    formatter (row, index) {
+      if (row.is_superuser === true) {
+        row.Registrationstate = '是'
+      }
+      if (row.is_superuser === false) {
+        row.Registrationstate = '否'
+      }
+      return row.Registrationstate
+    },
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
       this.$router.push(key)

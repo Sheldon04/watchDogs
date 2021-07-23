@@ -122,7 +122,7 @@
               width="150">
             </el-table-column>
             <el-table-column
-              prop="camera"
+              prop="camera_id"
               label="摄像头"
               width="150">
             </el-table-column>
@@ -132,7 +132,7 @@
               width="150">
             </el-table-column>
             <el-table-column
-              prop="number"
+              prop="invation_num"
               label="入侵数量"
               width="150">
             </el-table-column>

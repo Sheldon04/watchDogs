@@ -95,9 +95,6 @@
                 <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
               </el-col>
             </el-form-item>
-            <el-form-item label="是否超级管理员">
-              <el-switch v-model="form.is_superuser"></el-switch>
-            </el-form-item>
             <el-form-item label="上传头像">
               <el-upload
                 class="avatar-uploader"
@@ -148,7 +145,6 @@ export default {
         region: '',
         date1: '',
         date2: '',
-        is_superuser: false,
         file: ''
       }
     }

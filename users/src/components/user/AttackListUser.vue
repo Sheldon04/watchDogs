@@ -78,7 +78,7 @@
               width="150">
             </el-table-column>
             <el-table-column
-              prop="camera"
+              prop="camera_id"
               label="摄像头"
               width="150">
             </el-table-column>
