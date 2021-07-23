@@ -121,10 +121,7 @@ def upload_face(request):
 
 @api_view(['POST'])
 #获取某一天某段时间内的入侵记录
-@permission_classes((AllowAny,))
 def get_specific_records(request):
-
-    global invation_list
     date_choose_str= request.POST.get('date')
     time_span_str=request.POST.get('time_span')
 
