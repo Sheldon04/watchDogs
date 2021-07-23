@@ -30,7 +30,7 @@
        </el-aside>
        <el-main class="main">
          <el-button @click="dosomething()" type="primary">主要按钮</el-button>
-         <img style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://127.0.0.1:8000/api/video" type="video/mp4" width="1080" height="720">
+         <img ref="img" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" src="http://127.0.0.1:8000/api/video" type="video/mp4" width="1080" height="720">
        </el-main>
      </el-container>
    </div>
@@ -44,6 +44,23 @@ import axios from 'axios'
 
 export default {
   name: 'Monitor',
+  mounted () {
+    let token = sessionStorage.getItem('token')
+    let img = this.$refs.img
+    let request = new XMLHttpRequest()
+    request.responseType = 'blob'
+    request.open('get', this.authSrc, true)
+    request.setRequestHeader('Token ', token)
+    request.onreadystatechange = e => {
+      if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
+        img.src = URL.createObjectURL(request.response)
+        img.onload = () => {
+          URL.revokeObjectURL(img.src)
+        }
+      }
+    }
+    request.send(null)
+  },
   data () {
     return {
       activeIndex: this.$route.path,

@@ -100,20 +100,17 @@
             </el-form-item>
             <el-form-item label="上传头像">
               <el-upload
-                class="upload-demo"
-                drag
+                class="avatar-uploader"
                 :limit="1"
                 :action="uploadURL"
                 :headers="headers"
-                :on-preview="handlePreview"
                 :on-remove="removeChange"
                 :on-error="uploadError"
                 :on-change="fileChange"
                 :before-upload="beforeAvatarUpload"
                 :auto-upload="false">
-                <i class="el-icon-upload"></i>
-                <img v-if="licenseImageUrl" :src="licenseImageUrl" width="" height="">
-                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                <img v-if="licenseImageUrl" :src="licenseImageUrl" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
               <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传</el-button>
             </el-form-item>
@@ -226,14 +223,14 @@ export default {
 
 <style>
 .avatar-uploader .el-upload {
-  border: 1px dashed #d9d9d9 !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
-  position: relative !important;
-  overflow: hidden !important;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 .avatar-uploader .el-upload:hover {
-  border-color: #409EFF !important;
+  border-color: #409EFF;
 }
 .avatar-uploader-icon {
   font-size: 28px;
