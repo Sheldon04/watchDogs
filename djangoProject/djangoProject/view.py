@@ -18,10 +18,11 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
 from datamodel import models
+from datamodel.models import invationRecord
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
 
-
+#日期转码
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
@@ -29,7 +30,7 @@ class DateEncoder(json.JSONEncoder):
         else:
             return json.JSONEncoder.default(self, obj)
 
-
+#登陆
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 @authentication_classes(())
@@ -53,7 +54,7 @@ def login(request):
         errorInfo = u'用户名或密码错误'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
 
-    if user.is_superuser == False and is_superuser == '0':
+    if user.is_superuser == False and is_superuser == '1':
         result = False
         errorInfo = u'权限不足'
         return Response({"result": result, "detail": detail, "errorInfo": errorInfo})
@@ -78,15 +79,15 @@ def gen(d):
             if not flag:
                 continue
             print('send video')
-            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n\r\n')
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
 
-
+#处理过后视频推流
 @api_view(['GET'])
 def send_video(request):
     d = Detector(1)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
-
+#获取所有用户信息
 @api_view(['GET'])
 def get_all_users(request):
     userList = User.objects.values("username", "email", "is_superuser", "last_login")
@@ -94,18 +95,36 @@ def get_all_users(request):
                                cls=DateEncoder)
     return JsonResponse(json.loads(response_data), safe=False)
 
+
+#人脸接受保存
 @api_view(['POST'])
 #@permission_classes((AllowAny,))
 def upload_face(request):
-    img = request.POST.get('face')
+    img = request.FILES.get('face')
     #user = request.FILES.get('photo').name
     #img = request.data.get('face_img')
     phone = request.POST.get('phone')
+    #phone = '222'
     print(phone)
     print(img)
     img_model = models.mypicture(
-        photo=img,  # 拿到图片
-        phone=phone # 拿到图片的名字
+        photo=img,  # 拿到图片路径
+        phone=phone # 拿到图片对应手机号
     )
     img_model.save()  # 保存图片
-    return HttpResponse('/media/photos/' + img.name)
+    print(img_model.photo.name)
+    return HttpResponse('media/' + img_model.photo.name)
+
+@api_view(['POST'])
+#获取某一天内的入侵记录
+def get_specific_records(request):
+
+    y = request.POST.get('year_from')
+    m = request.POST.get('month_from')
+    d = request.POST.get('day_from')
+    date_from = datetime.date(int(y), int(m), int(d))
+    invation_list = invationRecord.objects.filter(date__range=(date_from, date_from)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
+
+    response_data =json.dumps(
+        list(invation_list.values("date", "time", "level", "camera_id", 'area', 'number')), cls=DateEncoder)
+    return JsonResponse(json.loads(response_data), safe=False)

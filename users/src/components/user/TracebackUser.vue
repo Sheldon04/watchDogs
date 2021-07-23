@@ -59,20 +59,34 @@
               slot="dateCell"
               slot-scope="{date, data}">
               <div v-if="data.isSelected">{{handle_click(data.day.split('-'))}}</div>
-              <p>
-                {{ data.day.split('-').slice(1).join('-') }}
-<!--                v-if="data.day==='2021-07-22'||data.day=='2021-07-23'"-->
-                <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 0 && month_invasion_data[data.day.split('-')[2]] <= 5" type="warning">
-                  {{month_invasion_data[data.day.split('-')[2]]}}
-                </el-tag>
-                <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 5" type="danger">
-                  {{month_invasion_data[data.day.split('-')[2]]}}
-                </el-tag>
-              </p>
+              <p class="date_cell">{{ data.day.split('-').slice(1).join('-') }}</p>
+              <el-popover
+                placement="right"
+                width="200"
+                trigger="click">
+                <el-table :data="detail_invasion_data">
+                  <el-table-column width="100" property="time" label="时间"></el-table-column>
+                  <el-table-column label="操作">
+                    <template slot-scope="scope">
+                      <el-button size="mini" type="text" @click="handleSee(scope.$index, scope.row)">查看</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+                <div slot="reference" class="date_cell">
+                  <el-badge v-if="parseInt(data.day.split('-')[1]) === cur_month" :value="month_invasion_data[data.day.split('-')[2]]" class="item">
+                    <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 0 && month_invasion_data[data.day.split('-')[2]] <= 5" type="warning">
+                      有入侵
+                    </el-tag>
+                    <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 5" type="danger">
+                      有入侵
+                    </el-tag>
+                  </el-badge>
+                </div>
+              </el-popover>
               <!--标记-->
-<!--              <div v-if="data.day==='2021-07-22'||data.day=='2021-07-23'" class="red budge">5</div>-->
-<!--              <div v-if="data.day==='2021-07-12'||data.day=='2021-07-13'" class="green budge"></div>-->
-<!--              <div v-if="data.day==='2021-07-02'||data.day=='2021-07-03'" class="orange budge"></div>-->
+              <!--              <div v-if="data.day==='2021-07-22'||data.day=='2021-07-23'" class="red budge">5</div>-->
+              <!--              <div v-if="data.day==='2021-07-12'||data.day=='2021-07-13'" class="green budge"></div>-->
+              <!--              <div v-if="data.day==='2021-07-02'||data.day=='2021-07-03'" class="orange budge"></div>-->
             </template>
           </el-calendar>
         </el-main>
@@ -97,7 +111,15 @@ export default {
         '24': 7,
         '27': 9
       },
-      testdata: 5
+      detail_invasion_data: [{
+        'time': '10:12:56'
+      },
+      {
+        'time': '10:12:56'
+      },
+      {
+        'time': '10:12:56'
+      }]
     }
   },
   methods: {
@@ -119,12 +141,15 @@ export default {
           '09': 10,
           '24': 2
         }
-      //  TODO 更新当前月入侵记录
+        //  TODO 更新当前月入侵记录
       }
       if (this.month_invasion_data[date[2]] > 0) {
         console.log('show invasion')
-      //  TODO 显示当天入侵详细记录
+        //  TODO 显示当天入侵详细记录
       }
+    },
+    handleSee (index, row) {
+      console.log(index, ' ', row.time)
     }
   },
   mounted () {
@@ -182,6 +207,10 @@ export default {
 }
 .orange{
   background-color: #ee915c;
+}
+
+.date_cell {
+  display: inline-block;
 }
 
 </style>

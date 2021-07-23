@@ -17,6 +17,7 @@ Vue.use(VideoPlayer)
 Vue.use(ElementUI)
 Vue.prototype.$http = axios
 Vue.prototype.localAPI = api.localAPI
+Vue.prototype.localMedia = api.localMedia
 
 Vue.config.productionTip = false
 

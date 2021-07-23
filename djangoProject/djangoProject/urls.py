@@ -22,7 +22,8 @@ from djangoProject import view, settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/video', view.send_video), #视频监控地址
-    path('api/user/login', view.login),
+    path('api/user/login', view.login), #登陆
     path('api/admin/getall', view.get_all_users), #获取所有用户信息
-    path('api/admin/uploadface', view.upload_face) #上传人脸照片
+    path('api/admin/uploadface', view.upload_face), #上传人脸照片
+    path('api/user/attacklistuser', view.get_specific_records) #指定时间入侵记录
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

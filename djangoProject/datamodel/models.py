@@ -9,3 +9,11 @@ from system.storage import ImageStorage
 class mypicture(models.Model):
     phone = models.CharField(max_length=64)
     photo = models.ImageField(upload_to='photos', default='', storage=ImageStorage())
+
+class invationRecord(models.Model):
+    date = models.DateField()
+    time = models.TimeField()
+    level = models.IntegerField()
+    camera_id = models.IntegerField()
+    area = models.CharField(max_length= 50)
+    invation_num =models.IntegerField()

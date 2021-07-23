@@ -105,8 +105,8 @@
                 :limit="1"
                 :action="uploadURL"
                 :headers="headers"
+                :on-preview="handlePreview"
                 :on-remove="removeChange"
-                :on-success="handleAvatarSuccess"
                 :on-error="uploadError"
                 :on-change="fileChange"
                 :before-upload="beforeAvatarUpload"
@@ -161,10 +161,6 @@ export default {
       console.log(key, keyPath)
       this.$router.push(key)
     },
-    handleAvatarSuccess (res, file) {
-      let _this = this
-      _this.licenseImageUrl = res.url
-    },
     fileChange (file) {
       this.form.file = file
     },
@@ -200,8 +196,8 @@ export default {
       console.log(formData.get('phone'))
       axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
         this.$message.success('上传成功')
-        this.licenseImageUrl = this.localAPI + res.data
-        console.log(res.data)
+        this.licenseImageUrl = this.localMedia + res.data
+        console.log(this.licenseImageUrl)
         // eslint-disable-next-line handle-callback-err
       }).catch(err => {
         this.$message.error('上传失败')
