@@ -79,7 +79,6 @@
               <td>
                 <el-date-picker
                   v-model="date"
-                  align="right"
                   type="date"
                   placeholder="选择日期"
                   :picker-options="pickerOptions"
@@ -239,7 +238,7 @@ export default {
       imgSrc: require('../../../assets/img3.jpg'),
       options: [],
       date: '2021-7-21',
-      timespan: [],
+      timespan: ['00:00:00', '23:59:59'],
       tableData: [{
         date: '2016-05-02',
         level: '严重',
@@ -320,5 +319,3 @@ export default {
 }
 
 </style>
-=======
->>>>>>> Stashed changes
