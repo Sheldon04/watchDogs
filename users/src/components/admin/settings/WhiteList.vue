@@ -74,6 +74,7 @@
         </el-aside>
         <el-main class="main">
           <el-table
+            v-loading = 'loading'
             class="main_table"
             :data="tableData"
             stripe
@@ -159,6 +160,13 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination align='center' @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                         :current-page="currentPage"
+                         :page-sizes="[10,20,50,100]"
+                         :page-size="pageSize"
+                         layout="total, sizes, prev, pager, next, jumper"
+                         :total="tableData.length">
+          </el-pagination>
         </el-main>
       </el-container>
     </div>
@@ -170,6 +178,10 @@ export default {
   name: 'WhiteList',
   data () {
     return {
+      loading: false,
+      currentPage: 1, // 当前页码
+      total: 0, // 总条数
+      pageSize: 10, // 每页的数据条数
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
       search: '',
@@ -223,7 +235,16 @@ export default {
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
       this.$router.push(key)
-    }
+    },
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+      this.currentPage = 1
+      this.pageSize = val
+    },
+    handleCurrentChange (val) {
+      console.log(`当前页: ${val}`)
+      this.currentPage = val
+    },
   }
 }
 </script>
@@ -246,7 +267,7 @@ export default {
 }
 
 .detail_table {
-  left: 20%;
+  left: 15%;
 }
 
 .search {
@@ -257,7 +278,7 @@ export default {
   margin: 0 auto;
   position: absolute;
   top: 15%;
-  left: 24%;
+  left: 20%;
 }
 
 </style>
