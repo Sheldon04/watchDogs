@@ -182,7 +182,7 @@ export default {
   mounted () {
     const auth = 'Token ' + localStorage.getItem('token')
     const header = {'Authorization': auth}
-    axios.get('http://127.0.0.1:8000/api/admin/attacklistuser/all', {'headers': header}).then(response => {
+    axios.get('http://127.0.0.1:8000/api/attacklistuser/all', {'headers': header}).then(response => {
       this.tableData = response.data
     })
   },
@@ -198,7 +198,7 @@ export default {
       formData.append('time_span', this.timespan) // 8:00:15,9:00:00
       const auth = 'Token ' + localStorage.getItem('token')
       const header = {'Authorization': auth}
-      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', formData, {'headers': header}).then(response => {
+      axios.post('http://127.0.0.1:8000/api/attacklistuser', formData, {'headers': header}).then(response => {
         this.tableData = response.data
       })
       console.log(formData.get('date'))
