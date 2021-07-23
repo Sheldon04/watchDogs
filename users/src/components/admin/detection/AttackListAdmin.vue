@@ -106,6 +106,7 @@
           <br>
           <br>
           <el-table
+            v-loading="loading"
             :data="tableData"
             style="width: 1000px"
             :row-class-name="tableRowClassName">
@@ -183,6 +184,7 @@ export default {
     const header = {'Authorization': auth}
     axios.get('http://127.0.0.1:8000/api/attacklistuser/all', {'headers': header}).then(response => {
       this.tableData = response.data
+      this.loading = false
     })
   },
   methods: {
@@ -231,6 +233,7 @@ export default {
   },
   data () {
     return {
+      loading: true,
       currentPage: 1, // 当前页码
       total: 0, // 总条数
       pageSize: 10, // 每页的数据条数
@@ -239,31 +242,7 @@ export default {
       options: [],
       date: '2021-7-21',
       timespan: ['00:00:00', '23:59:59'],
-      tableData: [{
-        date: '2016-05-02',
-        level: '严重',
-        camera: '1',
-        area: '仓库',
-        number: '1'
-      }, {
-        date: '2016-05-02',
-        level: '严重',
-        camera: '1',
-        area: '仓库',
-        number: '1'
-      }, {
-        date: '2016-05-02',
-        level: '严重',
-        camera: '1',
-        area: '仓库',
-        number: '1'
-      }, {
-        date: '2016-05-02',
-        level: '严重',
-        camera: '1',
-        area: '仓库',
-        number: '1'
-      }],
+      tableData: [],
       pickerOptions: {
         disabledDate (time) {
           return time.getTime() > Date.now()

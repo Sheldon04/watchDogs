@@ -74,6 +74,7 @@
         </el-aside>
         <el-main class="main">
           <el-table
+            v-loading="loading"
             :data="tableData.filter(data => !search || data.username.toLowerCase().includes(search.toLowerCase()))"
             stripe
             style="width: 1200px"
@@ -152,10 +153,12 @@ export default {
     axios.get(url, {'headers': header}).then(response => {
       console.log(response.data.result)
       this.tableData = response.data
+      this.loading = false
     })
   },
   data () {
     return {
+      loading: true,
       search: '',
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
