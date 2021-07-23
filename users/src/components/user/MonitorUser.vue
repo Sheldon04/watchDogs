@@ -50,7 +50,7 @@ export default {
     let request = new XMLHttpRequest()
     request.responseType = 'blob'
     request.open('get', this.authSrc, true)
-    request.setRequestHeader('Token ', token)
+    request.setRequestHeader('Authorization', 'Token ' + token)
     request.onreadystatechange = e => {
       if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
         img.src = URL.createObjectURL(request.response)
