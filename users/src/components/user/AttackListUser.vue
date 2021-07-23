@@ -87,7 +87,7 @@
               width="150">
             </el-table-column>
             <el-table-column
-              prop="number"
+              prop="invation_num"
               label="入侵数量"
               width="150">
             </el-table-column>
@@ -154,9 +154,11 @@ export default {
       //   keywords = keywords.concat(this.timespan)
       // }
       let formData = new FormData()
-      formData.append('date', this.date)
-      formData.append('timespan', this.timespan)
-      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', formData).then(response => {
+      formData.append('date', this.date) // 2021-7-10
+      formData.append('time_span', this.timespan) // 8:00:15,9:00:00
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', formData, {'headers': header}).then(response => {
         this.tableData = response.data
       })
       console.log(formData.get('date'))
@@ -203,25 +205,25 @@ export default {
         level: '严重',
         camera: '1',
         area: '仓库',
-        number: '1'
+        invation_num: '1'
       }, {
         date: '2016-05-02',
         level: '严重',
         camera: '1',
         area: '仓库',
-        number: '1'
+        invation_num: '1'
       }, {
         date: '2016-05-02',
         level: '严重',
         camera: '1',
         area: '仓库',
-        number: '1'
+        invation_num: '1'
       }, {
         date: '2016-05-02',
         level: '严重',
         camera: '1',
         area: '仓库',
-        number: '1'
+        invation_num: '1'
       }],
       pickerOptions: {
         disabledDate (time) {

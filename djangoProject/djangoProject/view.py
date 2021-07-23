@@ -27,6 +27,10 @@ class DateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime("%Y-%m-%d %H:%M:%S")
+        elif isinstance(obj, datetime.date):
+            return obj.strftime("%Y-%m-%d")
+        elif isinstance(obj, datetime.time):
+            return obj.strftime('%H:%M:%S')
         else:
             return json.JSONEncoder.default(self, obj)
 
@@ -117,22 +121,29 @@ def upload_face(request):
 
 @api_view(['POST'])
 #获取某一天某段时间内的入侵记录
-
+@permission_classes((AllowAny,))
 def get_specific_records(request):
 
-    date_choose_str= request.GET.get('date')
-    time_span_str=request.GET.get('time_span')
+    global invation_list
+    date_choose_str= request.POST.get('date')
+    time_span_str=request.POST.get('time_span')
+
+    time_from=datetime.datetime.strptime('00:00:00','%H:%M:%S')
+    time_to = datetime.datetime.strptime('00:00:00', '%H:%M:%S')
+    if(time_span_str != ''):
+        time_str_list=time_span_str.split(',')
+        time_from_str=time_str_list[0]
+        time_to_str=time_str_list[1]
+        time_from=datetime.datetime.strptime(time_from_str,'%H:%M:%S')
+        time_to = datetime.datetime.strptime(time_to_str, '%H:%M:%S')
+
 
     date_choose =datetime.datetime.strptime(date_choose_str,"%Y-%m-%d")
-    time_str_list=time_span_str.split(',')
-    time_from_str=time_str_list[0]
-    time_to_str=time_str_list[1]
-    time_from=datetime.datetime.strptime(time_from_str,'%H:%M:%S')
-    time_to = datetime.datetime.strptime(time_to_str, '%H:%M:%S')
-
 
     invation_list1 = invationRecord.objects.filter(date__range=(date_choose, date_choose))
-    invation_list = invation_list1.filter(time__range=(time_from,time_to)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
+    invation_list = invation_list1.values("date", "time", "level", "camera_id", 'area', 'invation_num')
+    if(time_span_str != ''):
+        invation_list = invation_list1.filter(time__range=(time_from,time_to)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
 
     response_data =json.dumps(
         list(invation_list.values("date", "time", "level", "camera_id", 'area', 'invation_num')), cls=DateEncoder)

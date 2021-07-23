@@ -49,7 +49,7 @@ export default {
     let img = this.$refs.img
     let request = new XMLHttpRequest()
     request.responseType = 'blob'
-    request.open('get', this.authSrc, true)
+    request.open('get', this.src, true)
     request.setRequestHeader('Authorization', 'Token ' + token)
     request.onreadystatechange = e => {
       if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
