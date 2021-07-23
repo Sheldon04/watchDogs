@@ -46,11 +46,6 @@ export default {
   name: 'Monitor',
   mounted () {
     let token = sessionStorage.getItem('token')
-    Object.defineProperty(Image.prototype, 'authsrc', {
-      writable: true,
-      enumerable: true,
-      configurable: true
-    })
     let img = this.$refs.img
     let request = new XMLHttpRequest()
     request.responseType = 'blob'
