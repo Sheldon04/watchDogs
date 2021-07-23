@@ -148,15 +148,19 @@ export default {
   },
   methods: {
     async search () {
-      let keywords = []
-      keywords.push(this.date)
-      if (this.timespan.length !== 0) {
-        keywords = keywords.concat(this.timespan)
-      }
-      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', keywords).then(response => {
+      // let keywords = []
+      // keywords.push(this.date)
+      // if (this.timespan.length !== 0) {
+      //   keywords = keywords.concat(this.timespan)
+      // }
+      let formData = new FormData()
+      formData.append('date', this.date)
+      formData.append('timespan', this.timespan)
+      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', formData).then(response => {
         this.tableData = response.data
       })
-      console.log(keywords)
+      console.log(formData.get('date'))
+      console.log(formData.get('timespan'))
     },
     tableRowClassName ({row, rowIndex}) {
       if (row.level === '严重') {

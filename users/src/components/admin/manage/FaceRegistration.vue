@@ -200,6 +200,8 @@ export default {
       console.log(formData.get('phone'))
       axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
         this.$message.success('上传成功')
+        this.licenseImageUrl = this.localAPI + res.data
+        console.log(res.data)
         // eslint-disable-next-line handle-callback-err
       }).catch(err => {
         this.$message.error('上传失败')
