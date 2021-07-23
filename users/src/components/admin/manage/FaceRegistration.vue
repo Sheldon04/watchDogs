@@ -6,7 +6,7 @@
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
         <el-aside width="200px">
-          <el-dropdown class="user-menu" placement="bottom-start">
+          <el-dropdown class="admin-menu" placement="bottom-start">
            <span class="el-dropdown-link">
              <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
            </span>
@@ -214,7 +214,7 @@ export default {
   position: absolute;
 }
 
-.user-menu {
+.admin-menu {
   left: 50px;
   top: 5px;
 }

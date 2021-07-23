@@ -141,7 +141,7 @@
 
 <script>
 export default {
-  name: 'TracebackAdmin',
+  name: 'Monitor',
   data () {
     return {
       activeIndex: this.$route.path,
@@ -255,6 +255,11 @@ export default {
 
 .date_cell {
   display: inline-block;
+}
+
+.user-menu {
+  left: 50px;
+  top: 5px
 }
 
 </style>

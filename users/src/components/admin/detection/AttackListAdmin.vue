@@ -73,7 +73,7 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <table class="main-table">
+          <table class="main-table2">
             <tr>
               <td>按日期选择</td>
               <td>
@@ -106,6 +106,7 @@
           <br>
           <br>
           <el-table
+            class="main-table"
             v-loading="loading"
             :data="tableData"
             style="width: 1000px"
@@ -157,20 +158,25 @@
   </div>
 </template>
 
-<style>
-.main .el-table .warning-row {
+<style scoped>
+.el-table .warning-row {
   background-color: oldlace;
 }
 
-.main .el-table .common-row {
+.el-table .common-row {
   background-color: #f0f9eb;
 }
 .submenu-title {
   font-size: 18px !important;
 }
-.main {
-  left: 200px;
-  top: 80px;
+.main-table {
+  top: 160px;
+  left: 220px;
+  position: absolute;
+}
+.main-table2 {
+  top: 90px;
+  left: 220px;
   position: absolute;
 }
 </style>
@@ -276,12 +282,6 @@ export default {
 <style scoped>
 .submenu-title {
   font-size: 18px !important;
-}
-
-.main {
-  left: 200px;
-  top: 80px;
-  position: absolute;
 }
 
 .el-table.warning-row {
