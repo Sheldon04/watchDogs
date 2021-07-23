@@ -116,15 +116,24 @@ def upload_face(request):
     return HttpResponse('media/' + img_model.photo.name)
 
 @api_view(['POST'])
-#获取某一天内的入侵记录
+#获取某一天某段时间内的入侵记录
+
 def get_specific_records(request):
 
-    y = request.POST.get('year_from')
-    m = request.POST.get('month_from')
-    d = request.POST.get('day_from')
-    date_from = datetime.date(int(y), int(m), int(d))
-    invation_list = invationRecord.objects.filter(date__range=(date_from, date_from)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
+    date_choose_str= request.GET.get('date')
+    time_span_str=request.GET.get('time_span')
+
+    date_choose =datetime.datetime.strptime(date_choose_str,"%Y-%m-%d")
+    time_str_list=time_span_str.split(',')
+    time_from_str=time_str_list[0]
+    time_to_str=time_str_list[1]
+    time_from=datetime.datetime.strptime(time_from_str,'%H:%M:%S')
+    time_to = datetime.datetime.strptime(time_to_str, '%H:%M:%S')
+
+
+    invation_list1 = invationRecord.objects.filter(date__range=(date_choose, date_choose))
+    invation_list = invation_list1.filter(time__range=(time_from,time_to)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
 
     response_data =json.dumps(
-        list(invation_list.values("date", "time", "level", "camera_id", 'area', 'number')), cls=DateEncoder)
+        list(invation_list.values("date", "time", "level", "camera_id", 'area', 'invation_num')), cls=DateEncoder)
     return JsonResponse(json.loads(response_data), safe=False)
