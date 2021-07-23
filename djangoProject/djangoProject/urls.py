@@ -27,5 +27,5 @@ urlpatterns = [
     path('api/admin/uploadface', view.upload_face), #上传人脸照片
     path('api/attacklistuser/all', view.get_specific_records), #所有入侵记录
     path('api/attacklistuser', view.get_specific_records), #指定时间入侵记录
-    path('api/invationrecord/getmonth', view.get_month_records()) #指定月份入侵记录
+    path('api/invationrecord/getmonth', view.get_month_records) #指定月份入侵记录
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
