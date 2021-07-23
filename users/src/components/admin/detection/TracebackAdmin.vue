@@ -98,35 +98,38 @@
               </td>
             </tr>
           </table>
-          <el-calendar :first-day-of-week=7 @pick="pick" @date-change="dateChange">
+          <el-calendar @pick="test" v-loading="loading" :first-day-of-week=7>
             <template
               slot="dateCell"
               slot-scope="{date, data}">
-              <div v-if="data.isSelected">{{handle_click(data.day.split('-'))}}</div>
-              <p class="date_cell">{{ data.day.split('-').slice(1).join('-') }}</p>
-              <el-popover
-                placement="right"
-                width="200"
-                trigger="click">
-                <el-table :data="detail_invasion_data">
-                  <el-table-column width="100" property="time" label="时间"></el-table-column>
-                  <el-table-column label="操作">
-                    <template slot-scope="scope">
-                      <el-button size="mini" type="text" @click="handleSee(scope.$index, scope.row, data.day)">查看</el-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-                <div slot="reference" class="date_cell">
-                  <el-badge v-if="parseInt(data.day.split('-')[1]) === cur_month" :value="month_invasion_data[data.day.split('-')[2]]" class="item">
-                    <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 0 && month_invasion_data[data.day.split('-')[2]] <= 5" type="warning">
-                      有入侵
-                    </el-tag>
-                    <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 5" type="danger">
-                      有入侵
-                    </el-tag>
-                  </el-badge>
-                </div>
-              </el-popover>
+              <div @click="handle_click(data.day.split('-'))">
+                <p class="date_cell">{{ data.day.split('-').slice(1).join('-') }}</p>
+                <el-popover
+                  placement="right"
+                  width="200"
+                  trigger="click">
+                  <el-table v-loading="dia_loading" :data="detail_invasion_data">
+                    <el-table-column width="100" property="time" label="时间"></el-table-column>
+                    <el-table-column label="操作">
+                      <template slot-scope="scope">
+                        <el-button
+                          size="mini" type="text"
+                          @click="handleSee(scope.$index, scope.row, data.day)">查看</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <div slot="reference" class="date_cell">
+                    <el-badge v-if="parseInt(data.day.split('-')[1]) === cur_month" :value="month_invasion_data[parseInt(data.day.split('-')[2])]" class="item">
+                      <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[parseInt(data.day.split('-')[2])] > 0 && month_invasion_data[parseInt(data.day.split('-')[2])] <= 5" type="warning">
+                        有入侵
+                      </el-tag>
+                      <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[parseInt(data.day.split('-')[2])] > 5" type="danger">
+                        有入侵
+                      </el-tag>
+                    </el-badge>
+                  </div>
+                </el-popover>
+              </div>
             </template>
           </el-calendar>
         </el-main>
@@ -139,32 +142,26 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
+import axios from 'axios'
+
 export default {
-  name: 'TracebackAdmin',
+  name: 'Monitor',
   data () {
     return {
+      loading: true,
+      dia_loading: false,
       video_url: '',
       dialogMediaVisible: false,
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
       options: [],
       value: '',
-      cur_month: 9,
-      month_invasion_data: {
-        '12': 2,
-        '23': 5,
-        '24': 7,
-        '27': 9
-      },
-      detail_invasion_data: [{
-        'time': '10:12:56'
-      },
-      {
-        'time': '10:12:56'
-      },
-      {
-        'time': '10:12:56'
-      }]
+      cur_month: -1,
+      cur_year: 0,
+      cur_day: 0,
+      month_invasion_data: {},
+      detail_invasion_data: []
     }
   },
   methods: {
@@ -175,22 +172,25 @@ export default {
     set_cur_month () {
       let nowDate = new Date()
       this.cur_month = nowDate.getMonth() + 1
-      console.log(nowDate)
+      this.cur_year = nowDate.getFullYear()
     },
     handle_click (date) {
       if (parseInt(date[1]) !== this.cur_month) {
+        this.cur_year = parseInt(date[0])
         this.cur_month = parseInt(date[1])
-        console.log('update month: ', this.cur_month)
-        this.month_invasion_data = {
-          '08': 1,
-          '09': 10,
-          '24': 2
-        }
-        //  TODO 更新当前月入侵记录
       }
-      if (this.month_invasion_data[date[2]] > 0) {
-        console.log('show invasion')
-        //  TODO 显示当天入侵详细记录
+      if (this.month_invasion_data[parseInt(date[2])] > 0) {
+        this.dia_loading = true
+        console.log(date[0] + '-' + date[1] + '-' + date[2])
+        let formData = new FormData()
+        formData.append('date', date[0] + '-' + date[1] + '-' + date[2]) // 2021-7-10
+        const auth = 'Token ' + localStorage.getItem('token')
+        const header = {'Authorization': auth}
+        axios.post('http://127.0.0.1:8000/api/attacklistuser/invasiontime', formData, {'headers': header}).then(response => {
+          // console.log(response.data)
+          this.detail_invasion_data = response.data
+          this.dia_loading = false
+        })
       }
     },
     handleSee (index, row, day) {
@@ -207,22 +207,40 @@ export default {
       // 点击上个月
       let prevBtn1 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(1)')
       prevBtn1.addEventListener('click', () => {
-        console.log('上个月')
+        if (this.cur_month - 1 === 0) {
+          this.cur_year -= 1
+        }
         this.cur_month = (this.cur_month + 11) % 12
       })
       // 点击今天
       let prevBtn2 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(2)')
       prevBtn2.addEventListener('click', () => {
-        console.log('今天')
       })
       // 点击下个月
       let prevBtn3 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(3)')
       prevBtn3.addEventListener('click', () => {
-        console.log('下个月')
+        if (this.cur_month + 1 === 13) {
+          this.cur_year += 1
+        }
         this.cur_month = this.cur_month % 12 + 1
       })
     })
     this.set_cur_month()
+  },
+  watch: {
+    // eslint-disable-next-line camelcase
+    cur_month (new_month, old_month) {
+      this.loading = true
+      let formData = new FormData()
+      formData.append('month', this.cur_year + '-' + this.cur_month) // 2021-7-10
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/invationrecord/getmonth', formData, {'headers': header}).then(response => {
+        console.log(response.data)
+        this.month_invasion_data = response.data
+        this.loading = false
+      })
+    }
   }
 }
 </script>

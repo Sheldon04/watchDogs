@@ -143,7 +143,9 @@ import axios from 'axios'
 export default {
   name: 'Monitor',
   mounted () {
-    axios.get('http://127.0.0.1:8000/api/attacklistuser/all').then(response => {
+    const auth = 'Token ' + localStorage.getItem('token')
+    const header = {'Authorization': auth}
+    axios.get('http://127.0.0.1:8000/api/attacklistuser/all', {'headers': header}).then(response => {
       this.tableData = response.data
       this.loading = false
     })

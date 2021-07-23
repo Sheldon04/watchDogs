@@ -75,25 +75,34 @@
         <el-main class="main">
           <el-form ref="form" :model="form" label-width="130px" class="form">
             <el-form-item label="注册人姓名">
-              <el-input v-model="form.name"></el-input>
+              <el-input v-model="form.username"></el-input>
             </el-form-item>
             <el-form-item label="手机">
               <el-input v-model="form.phone"></el-input>
             </el-form-item>
+            <el-form-item label="权限">
+              <el-select v-model="form.level" placeholder="权限">
+                <el-option label="高" value="3"></el-option>
+                <el-option label="中" value="2"></el-option>
+                <el-option label="低" value="1"></el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="准入区域">
-              <el-select v-model="form.region" placeholder="请选择准入区域">
-                <el-option label="区域一" value="shanghai"></el-option>
-                <el-option label="区域二" value="beijing"></el-option>
+              <el-select v-model="form.area" placeholder="请选择准入区域">
+                <el-option label="仓库" value="1"></el-option>
+                <el-option label="门店" value="2"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="准入时间">
-              <el-col :span="11">
-                <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%;"></el-date-picker>
-              </el-col>
-              <el-col class="line" :span="2">-</el-col>
-              <el-col :span="11">
-                <el-time-picker placeholder="选择时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
-              </el-col>
+                <el-time-picker
+                  is-range
+                  v-model="form.timespan"
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  placeholder="选择时间范围"
+                  value-format="HH:mm:ss">
+                </el-time-picker>
             </el-form-item>
             <el-form-item label="上传头像">
               <el-upload
@@ -112,7 +121,7 @@
               <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传</el-button>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="onSubmit">立即注册</el-button>
+              <el-button type="primary" @click="submitReg">立即注册</el-button>
             </el-form-item>
           </el-form>
         </el-main>
@@ -137,14 +146,15 @@ export default {
     return {
       activeIndex: this.$route.path,
       uploadURL: this.localAPI + 'admin/uploadface',
+      regURL: this.localAPI + 'admin/whitelist',
       imgSrc: require('../../../assets/img3.jpg'),
       licenseImageUrl: '',
       form: {
         username: '',
         phone: '',
-        region: '',
-        date1: '',
-        date2: '',
+        area: '',
+        timespan: ['00:00:00', '23:59:59'],
+        level: '',
         file: ''
       }
     }
@@ -194,6 +204,36 @@ export default {
         // eslint-disable-next-line handle-callback-err
       }).catch(err => {
         this.$message.error('上传失败')
+      })
+    },
+    submitReg () {
+      let formData = new FormData()
+      formData.append('name', this.form.username)
+      formData.append('area', this.form.area)
+      formData.append('phone_number', this.form.phone)
+      formData.append('time_span', this.form.timespan)
+      formData.append('level', this.form.level)
+      console.log(formData.get('time_span'))
+      console.log(formData.get('phone'))
+      axios.post(this.regURL, formData, {'headers': this.headers}).then(res => {
+        const {result, errorInfo} = res.data
+        if (result === true) {
+          this.$message({
+            showClose: true,
+            message: '注册成功',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            showClose: true,
+            message: errorInfo,
+            type: 'error'
+          })
+          console.log(formData.get('name'))
+          console.log(formData.get('area'))
+          console.log(formData.get('phone_number'))
+          console.log(formData.get('time_span'))
+        }
       })
     }
   }

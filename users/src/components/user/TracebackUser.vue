@@ -54,37 +54,38 @@
               </td>
             </tr>
           </table>
-          <el-calendar :first-day-of-week=7>
+          <el-calendar @pick="test" v-loading="loading" :first-day-of-week=7>
             <template
               slot="dateCell"
               slot-scope="{date, data}">
-              <div v-if="data.isSelected">{{handle_click(data.day.split('-'))}}</div>
-              <p class="date_cell">{{ data.day.split('-').slice(1).join('-') }}</p>
-              <el-popover
-                placement="right"
-                width="200"
-                trigger="click">
-                <el-table :data="detail_invasion_data">
-                  <el-table-column width="100" property="time" label="时间"></el-table-column>
-                  <el-table-column label="操作">
-                    <template slot-scope="scope">
-                      <el-button
-                        size="mini" type="text"
-                        @click="handleSee(scope.$index, scope.row, data.day)">查看</el-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-                <div slot="reference" class="date_cell">
-                  <el-badge v-if="parseInt(data.day.split('-')[1]) === cur_month" :value="month_invasion_data[data.day.split('-')[2]]" class="item">
-                    <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 0 && month_invasion_data[data.day.split('-')[2]] <= 5" type="warning">
-                      有入侵
-                    </el-tag>
-                    <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[data.day.split('-')[2]] > 5" type="danger">
-                      有入侵
-                    </el-tag>
-                  </el-badge>
-                </div>
-              </el-popover>
+              <div @click="handle_click(data.day.split('-'))">
+                <p class="date_cell">{{ data.day.split('-').slice(1).join('-') }}</p>
+                <el-popover
+                  placement="right"
+                  width="200"
+                  trigger="click">
+                  <el-table v-loading="dia_loading" :data="detail_invasion_data">
+                    <el-table-column width="100" property="time" label="时间"></el-table-column>
+                    <el-table-column label="操作">
+                      <template slot-scope="scope">
+                        <el-button
+                          size="mini" type="text"
+                          @click="handleSee(scope.$index, scope.row, data.day)">查看</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <div slot="reference" class="date_cell">
+                    <el-badge v-if="parseInt(data.day.split('-')[1]) === cur_month" :value="month_invasion_data[parseInt(data.day.split('-')[2])]" class="item">
+                      <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[parseInt(data.day.split('-')[2])] > 0 && month_invasion_data[parseInt(data.day.split('-')[2])] <= 5" type="warning">
+                        有入侵
+                      </el-tag>
+                      <el-tag v-if="parseInt(data.day.split('-')[1]) === cur_month && month_invasion_data[parseInt(data.day.split('-')[2])] > 5" type="danger">
+                        有入侵
+                      </el-tag>
+                    </el-badge>
+                  </div>
+                </el-popover>
+              </div>
             </template>
           </el-calendar>
         </el-main>
@@ -104,29 +105,19 @@ export default {
   name: 'Monitor',
   data () {
     return {
+      loading: true,
+      dia_loading: false,
       video_url: '',
       dialogMediaVisible: false,
       activeIndex: this.$route.path,
       imgSrc: require('../../assets/img3.jpg'),
       options: [],
       value: '',
-      cur_month: 9,
+      cur_month: -1,
       cur_year: 0,
-      month_invasion_data: {
-        '12': 2,
-        '23': 5,
-        '24': 7,
-        '27': 9
-      },
-      detail_invasion_data: [{
-        'time': '10:12:56'
-      },
-      {
-        'time': '10:12:56'
-      },
-      {
-        'time': '10:12:56'
-      }]
+      cur_day: 0,
+      month_invasion_data: {},
+      detail_invasion_data: []
     }
   },
   methods: {
@@ -144,9 +135,18 @@ export default {
         this.cur_year = parseInt(date[0])
         this.cur_month = parseInt(date[1])
       }
-      if (this.month_invasion_data[date[2]] > 0) {
-        console.log('show invasion')
-        //  TODO 显示当天入侵详细记录
+      if (this.month_invasion_data[parseInt(date[2])] > 0) {
+        this.dia_loading = true
+        console.log(date[0] + '-' + date[1] + '-' + date[2])
+        let formData = new FormData()
+        formData.append('date', date[0] + '-' + date[1] + '-' + date[2]) // 2021-7-10
+        const auth = 'Token ' + localStorage.getItem('token')
+        const header = {'Authorization': auth}
+        axios.post('http://127.0.0.1:8000/api/attacklistuser/invasiontime', formData, {'headers': header}).then(response => {
+          // console.log(response.data)
+          this.detail_invasion_data = response.data
+          this.dia_loading = false
+        })
       }
     },
     handleSee (index, row, day) {
@@ -186,9 +186,16 @@ export default {
   watch: {
     // eslint-disable-next-line camelcase
     cur_month (new_month, old_month) {
+      this.loading = true
       let formData = new FormData()
-      formData.append('month', this.date) // 2021-7-10
-      formData.append('time_span', this.timespan) // 8:00:15,9:00:00
+      formData.append('month', this.cur_year + '-' + this.cur_month) // 2021-7-10
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/invationrecord/getmonth', formData, {'headers': header}).then(response => {
+        console.log(response.data)
+        this.month_invasion_data = response.data
+        this.loading = false
+      })
     }
   }
 }
@@ -230,8 +237,4 @@ export default {
   display: inline-block;
 }
 
-.user-menu {
-  left: 50px;
-  top: 5px;
-}
 </style>
