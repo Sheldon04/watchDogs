@@ -54,7 +54,7 @@
               </td>
             </tr>
           </table>
-          <el-calendar :first-day-of-week=7 @pick="pick" @date-change="dateChange">
+          <el-calendar :first-day-of-week=7>
             <template
               slot="dateCell"
               slot-scope="{date, data}">
@@ -68,7 +68,9 @@
                   <el-table-column width="100" property="time" label="时间"></el-table-column>
                   <el-table-column label="操作">
                     <template slot-scope="scope">
-                      <el-button size="mini" type="text" @click="handleSee(scope.$index, scope.row)">查看</el-button>
+                      <el-button
+                        size="mini" type="text"
+                        @click="handleSee(scope.$index, scope.row, data.day)">查看</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -83,28 +85,33 @@
                   </el-badge>
                 </div>
               </el-popover>
-              <!--标记-->
-              <!--              <div v-if="data.day==='2021-07-22'||data.day=='2021-07-23'" class="red budge">5</div>-->
-              <!--              <div v-if="data.day==='2021-07-12'||data.day=='2021-07-13'" class="green budge"></div>-->
-              <!--              <div v-if="data.day==='2021-07-02'||data.day=='2021-07-03'" class="orange budge"></div>-->
             </template>
           </el-calendar>
         </el-main>
       </el-container>
+      <el-dialog width="720" height="360" :visible.sync="dialogMediaVisible">
+        <img ref="img" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" :src="video_url" type="video/mp4" width="720" height="360">
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
+import axios from 'axios'
+
 export default {
   name: 'Monitor',
   data () {
     return {
+      video_url: '',
+      dialogMediaVisible: false,
       activeIndex: this.$route.path,
       imgSrc: require('../../assets/img3.jpg'),
       options: [],
       value: '',
       cur_month: 9,
+      cur_year: 0,
       month_invasion_data: {
         '12': 2,
         '23': 5,
@@ -130,26 +137,25 @@ export default {
     set_cur_month () {
       let nowDate = new Date()
       this.cur_month = nowDate.getMonth() + 1
-      console.log(nowDate)
+      this.cur_year = nowDate.getFullYear()
     },
     handle_click (date) {
       if (parseInt(date[1]) !== this.cur_month) {
+        this.cur_year = parseInt(date[0])
         this.cur_month = parseInt(date[1])
-        console.log('update month: ', this.cur_month)
-        this.month_invasion_data = {
-          '08': 1,
-          '09': 10,
-          '24': 2
-        }
-        //  TODO 更新当前月入侵记录
       }
       if (this.month_invasion_data[date[2]] > 0) {
         console.log('show invasion')
         //  TODO 显示当天入侵详细记录
       }
     },
-    handleSee (index, row) {
-      console.log(index, ' ', row.time)
+    handleSee (index, row, day) {
+      // dialogTableVisible = true
+      this.dialogMediaVisible = true
+      this.video_url = 'http://127.0.0.1:8000/api/invationrecord/getvideo' + '?date=' +
+        day + '&time=' + row.time
+      // console.log(index, row.time)
+      console.log(this.video_url)
     }
   },
   mounted () {
@@ -157,22 +163,33 @@ export default {
       // 点击上个月
       let prevBtn1 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(1)')
       prevBtn1.addEventListener('click', () => {
-        console.log('上个月')
+        if (this.cur_month - 1 === 0) {
+          this.cur_year -= 1
+        }
         this.cur_month = (this.cur_month + 11) % 12
       })
       // 点击今天
       let prevBtn2 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(2)')
       prevBtn2.addEventListener('click', () => {
-        console.log('今天')
       })
       // 点击下个月
       let prevBtn3 = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(3)')
       prevBtn3.addEventListener('click', () => {
-        console.log('下个月')
+        if (this.cur_month + 1 === 13) {
+          this.cur_year += 1
+        }
         this.cur_month = this.cur_month % 12 + 1
       })
     })
     this.set_cur_month()
+  },
+  watch: {
+    // eslint-disable-next-line camelcase
+    cur_month (new_month, old_month) {
+      let formData = new FormData()
+      formData.append('month', this.date) // 2021-7-10
+      formData.append('time_span', this.timespan) // 8:00:15,9:00:00
+    }
   }
 }
 </script>
@@ -213,4 +230,8 @@ export default {
   display: inline-block;
 }
 
+.user-menu {
+  left: 50px;
+  top: 5px;
+}
 </style>

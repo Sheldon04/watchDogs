@@ -112,7 +112,7 @@
                   <el-table-column width="100" property="time" label="时间"></el-table-column>
                   <el-table-column label="操作">
                     <template slot-scope="scope">
-                      <el-button size="mini" type="text" @click="handleSee(scope.$index, scope.row)">查看</el-button>
+                      <el-button size="mini" type="text" @click="handleSee(scope.$index, scope.row, data.day)">查看</el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -127,23 +127,24 @@
                   </el-badge>
                 </div>
               </el-popover>
-              <!--标记-->
-              <!--              <div v-if="data.day==='2021-07-22'||data.day=='2021-07-23'" class="red budge">5</div>-->
-              <!--              <div v-if="data.day==='2021-07-12'||data.day=='2021-07-13'" class="green budge"></div>-->
-              <!--              <div v-if="data.day==='2021-07-02'||data.day=='2021-07-03'" class="orange budge"></div>-->
             </template>
           </el-calendar>
         </el-main>
       </el-container>
+      <el-dialog width="720" height="360" :visible.sync="dialogMediaVisible">
+        <img ref="img" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" :src="video_url" type="video/mp4" width="720" height="360">
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Monitor',
+  name: 'TracebackAdmin',
   data () {
     return {
+      video_url: '',
+      dialogMediaVisible: false,
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
       options: [],
@@ -192,8 +193,13 @@ export default {
         //  TODO 显示当天入侵详细记录
       }
     },
-    handleSee (index, row) {
-      console.log(index, ' ', row.time)
+    handleSee (index, row, day) {
+      // dialogTableVisible = true
+      this.dialogMediaVisible = true
+      this.video_url = 'http://127.0.0.1:8000/api/invationrecord/getvideo' + '?date=' +
+        day + '&time=' + row.time
+      // console.log(index, row.time)
+      console.log(this.video_url)
     }
   },
   mounted () {
@@ -259,7 +265,7 @@ export default {
 
 .user-menu {
   left: 50px;
-  top: 5px
+  top: 5px;
 }
 
 </style>
