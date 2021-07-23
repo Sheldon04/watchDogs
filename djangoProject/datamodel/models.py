@@ -17,3 +17,11 @@ class invationRecord(models.Model):
     camera_id = models.IntegerField()
     area = models.CharField(max_length= 50)
     invation_num =models.IntegerField()
+
+class WhiteList(models.Model):
+    name = models.CharField(max_length=20)
+    level = models.CharField(max_length=10)
+    phone_number = models.IntegerField()
+    time_start =models.TimeField()
+    time_end = models.TimeField()
+    area =models.CharField(max_length=50)
