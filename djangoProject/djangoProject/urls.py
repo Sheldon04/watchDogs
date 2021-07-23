@@ -25,7 +25,8 @@ urlpatterns = [
     path('api/user/login', view.login), #登陆
     path('api/admin/getall', view.get_all_users), #获取所有用户信息
     path('api/admin/uploadface', view.upload_face), #上传人脸照片
-    path('api/attacklistuser/all', view.get_specific_records), #所有入侵记录
-    path('api/attacklistuser', view.get_specific_records), #指定时间入侵记录
-    path('api/invationrecord/getmonth', view.get_month_records) #指定月份入侵记录
+    path('api/attacklistuser/all', view.get_invation_records), #所有入侵记录
+    path('api/attacklistuser', view.get_specific_invation_records), #指定时间入侵记录
+    path('api/invationrecord/getmonth', view.get_month_records), #指定月份入侵记录
+    path('api/invationrecord/getvideo', view.get_video) #视频回放
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

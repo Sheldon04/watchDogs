@@ -122,38 +122,42 @@ def upload_face(request):
 
 @api_view(['POST'])
 #获取某一天某段时间内的入侵记录
-def get_specific_records(request):
+def get_specific_invation_records(request):
     date_choose_str= request.POST.get('date')
     time_span_str=request.POST.get('time_span')
 
-    time_from=datetime.datetime.strptime('00:00:00','%H:%M:%S')
-    time_to = datetime.datetime.strptime('00:00:00', '%H:%M:%S')
-    if(time_span_str != ''):
-        time_str_list=time_span_str.split(',')
-        time_from_str=time_str_list[0]
-        time_to_str=time_str_list[1]
-        time_from=datetime.datetime.strptime(time_from_str,'%H:%M:%S')
-        time_to = datetime.datetime.strptime(time_to_str, '%H:%M:%S')
-
-
     date_choose =datetime.datetime.strptime(date_choose_str,"%Y-%m-%d")
+    time_str_list=time_span_str.split(',')
+    time_from_str=time_str_list[0]
+    time_to_str=time_str_list[1]
+    time_from=datetime.datetime.strptime(time_from_str,'%H:%M:%S')
+    time_to = datetime.datetime.strptime(time_to_str, '%H:%M:%S')
+
 
     invation_list1 = invationRecord.objects.filter(date__range=(date_choose, date_choose))
-    invation_list = invation_list1.values("date", "time", "level", "camera_id", 'area', 'invation_num')
-    if(time_span_str != ''):
-        invation_list = invation_list1.filter(time__range=(time_from,time_to)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
+    invation_list = invation_list1.filter(time__range=(time_from,time_to)).values("date", "time", "level", "camera_id", 'area', 'invation_num')
 
     response_data =json.dumps(
         list(invation_list.values("date", "time", "level", "camera_id", 'area', 'invation_num')), cls=DateEncoder)
     return JsonResponse(json.loads(response_data), safe=False)
 
+@api_view(['GET'])
+#获得全部入侵记录
+def get_invation_records(request):
 
+    recordList = invationRecord.objects.values("date", "time", "level", "camera_id",'area','invation_num')
+    response_data = json.dumps(list(recordList.values("date", "time", "level", "camera_id",'area','invation_num')), cls=DateEncoder)
+
+    return JsonResponse(json.loads(response_data), safe=False)
+
+
+@api_view(['POST'])
 #获取一个月的入侵记录
 #request: Year-month
 #return [{'day1':count1},{'day2':count2},...]
 #url:'api/invationrecord/getmonth'
 def get_month_records(request):
-    month_choose_str = request.GET.get('month')
+    month_choose_str = request.POST.get('month')
     month_choose = datetime.datetime.strptime(month_choose_str,'%Y-%m')
     invation_m_list1 = invationRecord.objects.filter(date__year=month_choose.year)
     invation_m_list =invation_m_list1.filter(date__month=month_choose.month)
@@ -168,3 +172,26 @@ def get_month_records(request):
     response_data =json.dumps(list(invation_list),cls=DateEncoder,indent= 4)
 
     return JsonResponse(json.loads(response_data), safe=False)
+
+def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
+    camera = cv2.VideoCapture(file_name)
+    if camera.isOpened():
+        while True:
+            ret, frame = camera.read()
+            if not ret:
+                break
+            flag, buffer = cv2.imencode('.jpg', frame)
+            if not flag:
+                continue
+            # print('send video')
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
+
+@api_view(['GET'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def get_video(request):
+    date = request.GET.get('date')
+    time = request.GET.get('time')
+    print(date, ' ', time)
+    # TODO 通过
+    return StreamingHttpResponse(file_iterator('E:/watchDogs/djangoProject/monitor/data/road.kux'), content_type="multipart/x-mixed-replace; boundary=frame")
