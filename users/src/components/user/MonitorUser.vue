@@ -73,12 +73,17 @@ export default {
       this.$router.push(key)
     },
     dosomething () {
+      let testdata = {
+        'year_from': 2021,
+        'month_from': 7,
+        'day_from': 10
+      }
       // console.log('test')
-      const url = 'http://127.0.0.1:8000/api/tokentest'
-      // // 从localStorage获取到登录时保持的token
-      const auth = 'Token ' + localStorage.getItem('token')
-      const header = {'Authorization': auth}
-      axios.get(url, {'headers': header}).then(response => {
+      // const url = 'http://127.0.0.1:8000/api/tokentest'
+      // // // 从localStorage获取到登录时保持的token
+      // const auth = 'Token ' + localStorage.getItem('token')
+      // const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/user/attacklistuser', testdata).then(response => {
         console.log(response.data.result)
       })
     }
