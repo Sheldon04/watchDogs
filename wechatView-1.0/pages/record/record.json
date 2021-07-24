@@ -1,8 +1,0 @@
-{"usingComponents": {
-  "van-calendar":"/miniprogram_npm/@vant/weapp/calendar/index",
-   "van-cell":"/miniprogram_npm/@vant/weapp/cell/index"
-  },
-  "navigationBarTitleText": "查看记录",
-  "component": true
-
-}
