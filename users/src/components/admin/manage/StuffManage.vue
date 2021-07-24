@@ -83,7 +83,6 @@
               prop="id"
               label="ID"
               width="100"
-              type="index"
               align="center"
               sortable>
             </el-table-column>

@@ -5,7 +5,7 @@
         <el-header>
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
-        <el-aside>
+        <el-aside width="200px">
           <el-dropdown class="user-menu" placement="bottom-start">
            <span class="el-dropdown-link">
              <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
@@ -39,32 +39,7 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <table>
-            <tr>
-              <td>按日期选择</td>
-              <td>
-                <el-date-picker
-                  v-model="value2"
-                  align="right"
-                  type="date"
-                  placeholder="选择日期"
-                  :picker-options="pickerOptions">
-                </el-date-picker>
-              </td>
-              <td>最近的侵入记录</td>
-              <td>
-                <el-select v-model="value" placeholder="请选择">
-                  <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
-                </el-select>
-              </td>
-            </tr>
-          </table>
-          <el-calendar @pick="test" v-loading="loading" :first-day-of-week=7>
+          <el-calendar v-loading="loading" :first-day-of-week=7>
             <template
               slot="dateCell"
               slot-scope="{date, data}">
@@ -100,8 +75,8 @@
           </el-calendar>
         </el-main>
       </el-container>
-      <el-dialog width="720" height="360" :visible.sync="dialogMediaVisible">
-        <img ref="img" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" :src="video_url" type="video/mp4" width="720" height="360">
+      <el-dialog id="video_player" width="800" height="360" :visible.sync="dialogMediaVisible">
+        <img id="1" ref="imgs" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" authsrc="http://127.0.0.1:8000/api/invationrecord/getvideo" src="" type="video/mp4" width="680" height="340">
       </el-dialog>
     </div>
   </div>
@@ -117,7 +92,6 @@ export default {
     return {
       loading: true,
       dia_loading: false,
-      video_url: '',
       dialogMediaVisible: false,
       activeIndex: this.$route.path,
       imgSrc: require('../../assets/img3.jpg'),
@@ -160,12 +134,26 @@ export default {
       }
     },
     handleSee (index, row, day) {
-      // dialogTableVisible = true
       this.dialogMediaVisible = true
-      this.video_url = 'http://127.0.0.1:8000/api/invationrecord/getvideo' + '?date=' +
-        day + '&time=' + row.time
-      // console.log(index, row.time)
-      console.log(this.video_url)
+      setTimeout(() => {
+        var img = document.getElementById(1)
+        var url = img.getAttribute('authsrc')
+        var request = new XMLHttpRequest()
+        request.responseType = 'blob'
+        request.open('get', url + '?date=' + day + '&time=' + row.time, true)
+        const auth = 'Token ' + localStorage.getItem('token')
+        console.log(auth)
+        // const header = {'Authorization': auth}
+        request.setRequestHeader('Authorization', auth)
+        request.onreadystatechange = e => {
+          if (request.readyState === XMLHttpRequest.DONE && request.status === 200) {
+            console.log(request)
+          }
+        }
+        request.send(null)
+        img.src = 'http://127.0.0.1:8000/api/invationrecord/getvideo' + '?date=' +
+          day + '&time=' + row.time
+      }, 0)
     }
   },
   mounted () {

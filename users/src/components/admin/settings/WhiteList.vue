@@ -104,7 +104,8 @@
               width="120"
               align="center">
               <template slot-scope="scope">
-                <el-button type="text" size="small" inline @click="handleFace">查看和更新</el-button>
+                <el-button type="text" size="small" inline @click="handleFace(scope.$index, scope.row)">查看</el-button>
+                <el-button type="text" size="small" inline @click="handleFaceUploadOpen(scope.$index, scope.row)">更新</el-button>
               </template>
             </el-table-column>
             <el-table-column
@@ -200,16 +201,19 @@
                  :visible.sync="editFormVisible_face"
                  :close-on-click-modal="false"
                  class="edit-face"
-                 :before-close="handleClose_face">
+                 @close="faceUploadClose">
         <el-form>
+          <el-form-item label="姓名" prop="name">
+            <el-input v-model="editName" auto-complete="off" disabled="true"></el-input>
+          </el-form-item>
           <el-form-item label="手机号" prop="phone_number">
-            <el-input v-model="editPhone" auto-complete="off"></el-input>
+            <el-input v-model="editPhone" auto-complete="off" disabled="true"></el-input>
           </el-form-item>
         </el-form>
         <el-upload
           class="avatar-uploader"
           :limit="1"
-          :action="faceURL"
+          :action="updateFaceURL"
           :headers="headers"
           :on-remove="removeChange"
           :on-error="uploadError"
@@ -217,13 +221,36 @@
           :before-upload="beforeAvatarUpload"
           :auto-upload="false"
           align="center">
-          <img v-if="licenseImageUrl" :src="licenseImageUrl" class="avatar">
+          <img v-if="newLicenseImageUrl" :src="newLicenseImageUrl" class="avatar">
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
         <div slot="footer" class="dialog-footer">
-          <el-button @click.native="handleCancel_face('editForm')">取消</el-button>
-          <el-button type="primary" @click.native="handleUpdate_face('editForm')">更新</el-button>
+          <el-button @click.native="editFormVisible_face = false">取消</el-button>
+          <el-button type="primary" @click.native="handleFaceUpload()">更新</el-button>
         </div>
+      </el-dialog>
+      <el-dialog
+        title="警告"
+        :visible.sync="confirmDialogVisible"
+        width="30%"
+        center>
+        <span>确认删除白名单中的这一用户吗？</span>
+        <span slot="footer" class="dialog-footer">
+        <el-button @click="confirmDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleDeleteConfirm">确 定</el-button>
+        </span>
+      </el-dialog>
+      <el-dialog
+        @close="faceClose"
+        title="人脸照片"
+        :visible.sync="seeDialogVisible"
+        width="10%"
+        center>
+        <el-image
+          style="width: 100px; height: 100px"
+          :src="licenseImageUrl"
+          :fit="fit"
+          v-loading="faceLoading"></el-image>
       </el-dialog>
     </div>
   </div>
@@ -248,6 +275,7 @@ export default {
       this.tableData = response.data
       this.loading = false
     })
+    this.editForm.timespan = []
   },
   data () {
     return {
@@ -255,9 +283,18 @@ export default {
       editURL: this.localAPI + 'admin/whitelist/edit',
       editFormVisible: false, // 默认不显示编辑弹层
       delURL: this.localAPI + 'admin/whitelist/del',
-      editFormVisible_face: false,
-      licenseImageUrl: '',
+      faceURL: this.localAPI + 'admin/getface',
+      updateFaceURL: this.localAPI + 'admin/updateface',
+      confirmDialogVisible: false,
+      phone_to_delete: '',
       editPhone: '',
+      editName: '',
+      editFormVisible_face: false,
+      file: '',
+      seeDialogVisible: false,
+      faceLoading: true,
+      licenseImageUrl: '',
+      newLicenseImageUrl: '',
       loading: true,
       currentPage: 1, // 当前页码
       total: 0, // 总条数
@@ -272,16 +309,11 @@ export default {
     // 点击编辑
     handleEdit (index, row) {
       this.editFormVisible = true
+      row.timespan = []
+      row.timespan.push(row.time_start)
+      row.timespan.push(row.time_end)
       this.editForm = Object.assign({}, row) // 这句是关键！！！
-      this.editForm.timespan = []
-      this.editForm.timespan.push(row.time_start)
-      this.editForm.timespan.push(row.time_end)
-      console.log(this.editForm.timespan)
-    },
-    handleFace (index, row) {
-      this.editFormVisible_face = true
-      this.editPhone = row.phone_number
-      console.log(this.editPhone)
+      console.log(row.timespan)
     },
     // 点击关闭dialog
     handleClose (done) {
@@ -329,9 +361,14 @@ export default {
       this.editFormVisible = false
     },
     handleDelete (index, row) {
+      this.confirmDialogVisible = true
+      this.phone_to_delete = row.phone_number
+    },
+    handleDeleteConfirm () {
+      this.confirmDialogVisible = false
       let formData = new FormData()
-      formData.append('phone_number', row.phone_number)
-      console.log(row.phone_number)
+      formData.append('phone_number', this.phone_to_delete)
+      console.log(this.phone_to_delete)
       axios.post(this.delURL, formData, {'headers': this.headers}).then(res => {
         const {result, errorInfo} = res.data
         if (result === true) {
@@ -368,7 +405,7 @@ export default {
       this.currentPage = val
     },
     fileChange (file) {
-      this.form.file = file
+      this.file = file
     },
     beforeAvatarUpload (file) {
       // eslint-disable-next-line no-redeclare
@@ -393,21 +430,50 @@ export default {
     removeChange (file, fileList) {
       console.log('你要移除的文件为', file.name)
     },
-    // eslint-disable-next-line handle-callback-err
-    submitUpload () {
+    handleFaceUploadOpen (index, row) {
+      this.editFormVisible_face = true
+      this.editPhone = row.phone_number
+      this.editName = row.name
+    },
+    handleFaceUpload () {
       let formData = new FormData()
-      formData.append('phone', this.form.phone)
-      formData.append('face', this.form.file.raw)
+      formData.append('phone_number', this.editPhone)
+      formData.append('face', this.file.raw)
       console.log(formData.get('face'))
-      console.log(formData.get('phone'))
-      axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
+      console.log(formData.get('phone_number'))
+      axios.post(this.updateFaceURL, formData, {'headers': this.headers}).then(res => {
         this.$message.success('上传成功')
-        this.licenseImageUrl = this.localMedia + res.data
-        console.log(this.licenseImageUrl)
+        this.newLicenseImageUrl = this.localMedia + res.data
+        console.log(this.newLicenseImageUrl)
         // eslint-disable-next-line handle-callback-err
       }).catch(err => {
         this.$message.error('上传失败')
       })
+    },
+    handleFace (index, row) {
+      this.faceLoading = true
+      this.seeDialogVisible = true
+      let formData = new FormData()
+      formData.append('phone_number', row.phone_number)
+      console.log(formData.get('phone_number'))
+      axios.post(this.faceURL, formData, {'headers': this.headers}).then(res => {
+        this.$message.success('获取成功')
+        this.licenseImageUrl = this.localMedia + res.data
+        this.faceLoading = false
+        console.log(this.licenseImageUrl)
+        // eslint-disable-next-line handle-callback-err
+      }).catch(err => {
+        this.$message.error('获取失败')
+      })
+    },
+    faceClose () {
+      this.seeDialogVisible = false
+      this.licenseImageUrl = ''
+    },
+    faceUploadClose () {
+      this.editFormVisible_face = false
+      this.file = ''
+      this.newLicenseImageUrl = ''
     }
   }
 }

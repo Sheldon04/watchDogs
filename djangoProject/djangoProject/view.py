@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
 from datamodel import models
-from datamodel.models import invationRecord, WhiteList
+from datamodel.models import invationRecord, WhiteList, mypicture
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
 
@@ -74,6 +74,57 @@ def login(request):
     user.last_login = datetime.datetime.now()
     return Response({"result": result, "detail": {'token': token}, "errorInfo": errorInfo})
 
+#获取所有用户信息
+@api_view(['GET'])
+def get_all_users(request):
+    userList = User.objects.values("id", "username", "email", "is_superuser", "last_login")
+    response_data = json.dumps(list(userList.values("id", "username", "email", "is_superuser", "last_login")),
+                               cls=DateEncoder)
+    return JsonResponse(json.loads(response_data), safe=False)
+
+#删除用户
+@api_view(['POST'])
+def user_delete(request):
+    detail = {}
+    error_info=''
+    id = request.POST.get("id")
+    User.objects.filter(id=id).delete()
+
+    if(User.objects.filter(id=id).delete()):
+        print("success")
+        result = True
+    else:
+        print('delede failed')
+        result = False
+        error_info = '删除失败'
+
+    return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
+
+#编辑用户
+@api_view(['POST'])
+def user_update(request):
+    detail = {}
+    error_info=''
+    id = request.POST.get("id")
+    username = request.POST.get('username')
+    phone_number = request.POST.get('phone_number')
+    email = request.POST.get('email')
+
+    if(User.objects.filter(id=id).update(username=username, phone_number=phone_number,email=email)):
+        print("success")
+        result = True
+    else:
+        print('delede failed')
+        result = False
+        error_info = '删除失败'
+
+    return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
+
+#增加用户
+@api_view(['POST'])
+def user_reg(request):
+    id = request.POST.get("id")
+    User.objects.filter(id=id).delete()
 
 def gen(d):
     while True:
@@ -92,13 +143,17 @@ def send_video(request):
     d = Detector(1)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
-#获取所有用户信息
+#视频回放调取视频
 @api_view(['GET'])
-def get_all_users(request):
-    userList = User.objects.values("username", "email", "is_superuser", "last_login")
-    response_data = json.dumps(list(userList.values("username", "email", "is_superuser", "last_login")),
-                               cls=DateEncoder)
-    return JsonResponse(json.loads(response_data), safe=False)
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def get_video(request):
+    date = request.GET.get('date')
+    time = request.GET.get('time')
+    time = time.split(':')
+    filepath = date + '-' + time[0] + '-' + time[1] + '-' + time[2]
+    filepath = './monitor/video/' + filepath + '.avi'
+    return StreamingHttpResponse(file_iterator(filepath), content_type="multipart/x-mixed-replace; boundary=frame")
 
 
 #人脸接受保存
@@ -106,8 +161,6 @@ def get_all_users(request):
 #@permission_classes((AllowAny,))
 def upload_face(request):
     img = request.FILES.get('face')
-    #user = request.FILES.get('photo').name
-    #img = request.data.get('face_img')
     phone = request.POST.get('phone')
     #phone = '222'
     print(phone)
@@ -118,6 +171,32 @@ def upload_face(request):
     )
     img_model.save()  # 保存图片
     print(img_model.photo.name)
+    return HttpResponse('media/' + img_model.photo.name)
+
+@api_view(['POST'])
+#@permission_classes((AllowAny,))
+def get_face(request):
+    phone = request.POST.get('phone_number')
+    #phone = '222'
+    print(phone)
+    qset = mypicture.objects.filter(phone=phone)
+    print(qset.count())
+    mypic = qset.first()
+    return HttpResponse('media/' + mypic.photo.name)
+
+@api_view(['POST'])
+#@permission_classes((AllowAny,))
+def update_face(request):
+    phone = request.POST.get('phone_number')
+    img = request.FILES.get('face')
+    #phone = '222'
+    print(phone)
+    mypicture.objects.filter(phone=phone).delete()
+    img_model = models.mypicture(
+        photo=img,  # 拿到图片路径
+        phone=phone # 拿到图片对应手机号
+    )
+    img_model.save()  # 保存图片
     return HttpResponse('media/' + img_model.photo.name)
 
 @api_view(['POST'])
@@ -186,17 +265,6 @@ def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
             # print('send video')
             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
 
-#视频回放调取视频
-@api_view(['GET'])
-@permission_classes((AllowAny,))
-@authentication_classes(())
-def get_video(request):
-    date = request.GET.get('date')
-    time = request.GET.get('time')
-    print(date, ' ', time)
-    # TODO 通过
-    return StreamingHttpResponse(file_iterator('E:/watchDogs/djangoProject/monitor/data/road.kux'), content_type="multipart/x-mixed-replace; boundary=frame")
-
 
 #白名单
 #增
@@ -223,10 +291,10 @@ def whitelist_add(request):
         print('empty')
         result =False
         error_info = '所填项不能为空'
-    elif whitelist.filter(phone_number__exact=phone_number).count()!=0:
+    elif not phone_number.isdigit():
         print('phone')
         result = False
-        error_info = 'Phone number repeat.'
+        error_info = '手机号码格式错误'
     else:
         print('sucsuc')
         time_start = datetime.datetime.strptime(time_start_str, '%H:%M:%S')
@@ -261,7 +329,7 @@ def whitelist_all(request):
     return JsonResponse(json.loads(response_data), safe=False)
 
 #白名单
-#增
+#编辑
 @api_view(['POST'])
 def whitelist_edit(request):
     result = True

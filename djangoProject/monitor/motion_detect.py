@@ -109,9 +109,9 @@ if __name__ == '__main__':
                 # # yolov5检测物体
         pre_frame = gray_lwpCV
                 # # Images
-                # img = frame_lwpCV  # or file, PIL, OpenCV, numpy, multiple
+                # video = frame_lwpCV  # or file, PIL, OpenCV, numpy, multiple
                 # # Inference
-                # results = model(img)
+                # results = model(video)
                 # # Results
                 # # results.show()  # or .show(), .save(), .crop(), .pandas(), etc.
                 # # print(type(results.pandas().xyxy[0]['xmin'].values[0]))

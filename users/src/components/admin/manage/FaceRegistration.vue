@@ -139,6 +139,7 @@ export default {
   data () {
     return {
       activeIndex: this.$route.path,
+      hasFace: false,
       uploadURL: this.localAPI + 'admin/uploadface',
       regURL: this.localAPI + 'admin/whitelist/add',
       imgSrc: require('../../../assets/img3.jpg'),
@@ -191,9 +192,11 @@ export default {
       formData.append('face', this.form.file.raw)
       console.log(formData.get('face'))
       console.log(formData.get('phone'))
+      console.log(this.form.timespan)
       axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
         this.$message.success('上传成功')
         this.licenseImageUrl = this.localMedia + res.data
+        this.hasFace = true
         console.log(this.licenseImageUrl)
         // eslint-disable-next-line handle-callback-err
       }).catch(err => {
@@ -210,16 +213,20 @@ export default {
       console.log(formData.get('phone'))
       axios.post(this.regURL, formData, {'headers': this.headers}).then(res => {
         const {result, errorInfo} = res.data
-        if (result === true) {
+        if (result === true && this.hasFace === true) {
           this.$message({
             showClose: true,
             message: '注册成功',
             type: 'success'
           })
         } else {
+          let msg = errorInfo
+          if (this.hasFace === false) {
+            msg = '未上传人脸照片'
+          }
           this.$message({
             showClose: true,
-            message: errorInfo,
+            message: msg,
             type: 'error'
           })
           console.log(formData.get('name'))

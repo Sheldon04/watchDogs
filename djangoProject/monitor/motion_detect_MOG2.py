@@ -19,7 +19,7 @@ import numpy as np
 # eye_cascade = cv2.CascadeClassifier(pathe)
 class Detector:
     def __init__(self, choice):
-        self.conf = {'save_path': './img/', 'min_motion_frames': 10, 'enable_save_img': True}
+        self.conf = {'save_path': './video/', 'min_motion_frames': 10, 'enable_save_img': True}
         self.video_writer = None
         if choice == 0:
             # video="http://admin:admin@192.168.43.1:8081"   #此处@后的ipv4 地址需要改为app提供的地址
@@ -152,6 +152,6 @@ if __name__ == '__main__':
         print(type(buffer))
         # print(type(pic_str))
         # print(type(buffer))
-        # cv2.imshow('img', img)
+        # cv2.imshow('video', video)
         if is_invade:
             print(invade_time)
