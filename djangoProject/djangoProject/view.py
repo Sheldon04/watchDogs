@@ -77,8 +77,8 @@ def login(request):
 #获取所有用户信息
 @api_view(['GET'])
 def get_all_users(request):
-    userList = User.objects.values("id", "username", "email", "is_superuser", "last_login")
-    response_data = json.dumps(list(userList.values("id", "username", "email", "is_superuser", "last_login")),
+    userList = User.objects.values("id", "username", "email", "is_superuser", "last_login", "first_name", "last_name")
+    response_data = json.dumps(list(userList.values("id", "username", "email", "is_superuser", "last_login", "first_name", "last_name")),
                                cls=DateEncoder)
     return JsonResponse(json.loads(response_data), safe=False)
 
@@ -107,16 +107,17 @@ def user_update(request):
     error_info=''
     id = request.POST.get("id")
     username = request.POST.get('username')
-    phone_number = request.POST.get('phone_number')
     email = request.POST.get('email')
+    first_name = request.POST.get('first_name')
+    last_name = request.POST.get('last_name')
 
-    if(User.objects.filter(id=id).update(username=username, phone_number=phone_number,email=email)):
+    if(User.objects.filter(id=id).update(username=username, email=email, first_name=first_name, last_name=last_name)):
         print("success")
         result = True
     else:
         print('delede failed')
         result = False
-        error_info = '删除失败'
+        error_info = '编辑失败'
 
     return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
 
@@ -124,7 +125,6 @@ def user_update(request):
 @api_view(['POST'])
 def user_reg(request):
     id = request.POST.get("id")
-    User.objects.filter(id=id).delete()
 
 def gen(d):
     while True:
