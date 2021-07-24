@@ -2,6 +2,7 @@
 # Create your views here.
 import datetime
 import json
+import os
 import time
 
 import cv2
@@ -191,6 +192,13 @@ def update_face(request):
     img = request.FILES.get('face')
     #phone = '222'
     print(phone)
+    try:
+        old = mypicture.objects.filter(phone=phone).first()
+        del_path = './media/' + old.photo.name
+        os.remove(del_path)
+    except:
+        print('delete failed')
+    print(del_path)
     mypicture.objects.filter(phone=phone).delete()
     img_model = models.mypicture(
         photo=img,  # 拿到图片路径
