@@ -208,7 +208,6 @@ def whitelist_add(request):
 
     name = request.POST.get('name')
     level = request.POST.get('level')
-    area = request.POST.get('area')
     phone_number = request.POST.get('phone_number')
     time_span_str = request.POST.get('time_span')
     time_str_list = time_span_str.split(',')
@@ -219,24 +218,20 @@ def whitelist_add(request):
     if whitelist.filter(name__exact=name).count()!=0:
         print('name')
         result = False
-        error_info='Name repeat.'
-    elif name =='' or level =='' or area == '' or phone_number =='' or time_start_str =='' or time_end_str =='':
+        error_info='名称重复'
+    elif name =='' or level =='' or phone_number =='' or time_start_str =='' or time_end_str =='':
         print('empty')
         result =False
-        error_info = 'Convert null'
+        error_info = '所填项不能为空'
     elif whitelist.filter(phone_number__exact=phone_number).count()!=0:
         print('phone')
         result = False
         error_info = 'Phone number repeat.'
-    elif level != '1' and level != '2' and level != '3':
-        print('level')
-        result =False
-        error_info='Illeagal level.'
     else:
         print('sucsuc')
         time_start = datetime.datetime.strptime(time_start_str, '%H:%M:%S')
         time_end = datetime.datetime.strptime(time_end_str, '%H:%M:%S')
-        whitelist.create(name=name,level=level,area=area,phone_number=phone_number,time_start=time_start,time_end=time_end)
+        whitelist.create(name=name,level=level,phone_number=phone_number,time_start=time_start,time_end=time_end)
 
 
     return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
@@ -255,3 +250,60 @@ def get_specific_invation_time(request):
     # response_data =json.dumps(
     #     list(invation_list.values("date", "time", "level", "camera_id", 'area', 'invation_num')), cls=DateEncoder)
     return Response(invation_list)
+
+@api_view(['GET'])
+#返回所有白名单信息
+def whitelist_all(request):
+    recordList = WhiteList.objects.values('name','level','phone_number','time_start','time_end')
+    response_data = json.dumps(list(recordList.values('name','level','phone_number','time_start','time_end')),
+                               cls=DateEncoder)
+
+    return JsonResponse(json.loads(response_data), safe=False)
+
+#白名单
+#增
+@api_view(['POST'])
+def whitelist_edit(request):
+    result = True
+    detail = {}
+    error_info=''
+
+    name = request.POST.get('name')
+    level = request.POST.get('level')
+    phone_number = request.POST.get('phone_number')
+    time_span_str = request.POST.get('time_span')
+    time_str_list = time_span_str.split(',')
+    time_start_str = time_str_list[0]
+    time_end_str = time_str_list[1]
+
+    whitelist = WhiteList.objects
+    if name =='' or level =='' or phone_number =='' or time_start_str =='' or time_end_str =='':
+        print('empty')
+        result =False
+        error_info = '所填项不能为空'
+    else:
+        print('sucsuc')
+        time_start = datetime.datetime.strptime(time_start_str, '%H:%M:%S')
+        time_end = datetime.datetime.strptime(time_end_str, '%H:%M:%S')
+        whitelist.filter(phone_number=phone_number).update(name=name,level=level,phone_number=phone_number,time_start=time_start,time_end=time_end)
+
+
+    return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
+
+#白名单
+#删除
+@api_view(['POST'])
+def whitelist_delete(request):
+    detail = {}
+    error_info=''
+    whitelist = WhiteList.objects
+    phone_number = request.POST.get('phone_number')
+    if(whitelist.filter(phone_number=phone_number).delete()):
+        print("success")
+        result = True
+    else:
+        print('delede failed')
+        result = False
+        error_info = '删除失败'
+
+    return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})

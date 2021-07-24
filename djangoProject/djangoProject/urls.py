@@ -30,5 +30,8 @@ urlpatterns = [
     path('api/invationrecord/getmonth', view.get_month_records), #指定月份入侵记录
     path('api/invationrecord/getvideo', view.get_video), #视频回放
     path('api/attacklistuser/invasiontime', view.get_specific_invation_time), #制定日期入侵记录时间
-    path('api/admin/whitelist', view.whitelist_add), #视频回放
+    path('api/admin/whitelist/add', view.whitelist_add), #注册白名单
+    path('api/admin/whitelist/all', view.whitelist_all), #获取白名单
+    path('api/admin/whitelist/edit', view.whitelist_edit), #编辑白名单
+    path('api/admin/whitelist/del', view.whitelist_delete), #删除白名单
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
