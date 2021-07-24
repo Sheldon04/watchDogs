@@ -6,6 +6,16 @@
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
         <el-aside>
+          <el-dropdown class="user-menu" placement="bottom-start">
+           <span class="el-dropdown-link">
+             <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+           </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>个人信息</el-dropdown-item>
+              <el-dropdown-item>修改密码</el-dropdown-item>
+              <el-dropdown-item>注销</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
           <el-menu
             :default-active=activeIndex
             class="el-menu-vertical-demo"
@@ -235,6 +245,11 @@ export default {
 
 .date_cell {
   display: inline-block;
+}
+
+.user-menu {
+  left: 50px;
+  top: 5px;
 }
 
 </style>
