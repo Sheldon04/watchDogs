@@ -135,7 +135,7 @@
         </el-main>
       </el-container>
       <el-dialog width="720" height="360" :visible.sync="dialogMediaVisible">
-        <img ref="img" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" :src="video_url" type="video/mp4" width="720" height="360">
+        <img ref="img" style="-webkit-user-select: none;background-color: hsl(0, 0%, 25%);" :src="video_url" type="video/mp4" width="680" height="340">
       </el-dialog>
     </div>
   </div>
@@ -194,7 +194,6 @@ export default {
       }
     },
     handleSee (index, row, day) {
-      // dialogTableVisible = true
       this.dialogMediaVisible = true
       this.video_url = 'http://127.0.0.1:8000/api/invationrecord/getvideo' + '?date=' +
         day + '&time=' + row.time

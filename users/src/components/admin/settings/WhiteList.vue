@@ -78,7 +78,7 @@
             class="main_table"
             :data="tableData"
             stripe
-            style="width: 1000px"
+            style="width: 1200px"
             :default-sort = "{prop: 'id', order: 'descending'}">
             <el-table-column
               prop="id"
@@ -89,50 +89,41 @@
             <el-table-column
               prop="name"
               label="姓名"
-              sortable>
+              width="120"
+              align="center">
             </el-table-column>
             <el-table-column
-              prop="is_superuser"
-              label="是否为管理员"
-              :filters="[{ text: '是', value: '是' }, { text: '否', value: '否' }]"
-              :filter-method="filterHandler">
+              prop="phone_number"
+              label="手机号"
+              width="140"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="face_info"
-              label="人脸信息">
+              label="人脸信息"
+              width="120"
+              align="center">
               <template slot-scope="scope">
-                <el-button type="text" size="small" inline>查看</el-button>
-                <el-button type="text" size="small" inline>更新</el-button>
+                <el-button type="text" size="small" inline @click="handleFace">查看和更新</el-button>
               </template>
             </el-table-column>
             <el-table-column
               label="权限信息"
-              type="expand"
-              width="80">
-              <template slot-scope="props">
-                <el-table
-                  class="detail_table"
-                  :data="props.row.permission_data"
-                  style="width: 500px">
-                  <el-table-column
-                    label="区域"
-                    prop="area">
-                  </el-table-column>
-                  <el-table-column
-                    label="时间"
-                    prop="time">
-                  </el-table-column>
-                  <el-table-column
-                    align="center">
-                    <template slot="header" slot-scope="scope">
-                      <el-button type="primary" size="mini">增加</el-button>
-                    </template>
-                    <template slot-scope="scope">
-                      <el-button type="text" size="small" inline>删除</el-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </template>
+              prop="level"
+              width="120"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              label="最早进入"
+              prop="time_start"
+              width="140"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              label="最晚离开"
+              prop="time_end"
+              width="140"
+              align="center">
             </el-table-column>
             <el-table-column
               align="center"
@@ -169,69 +160,200 @@
           </el-pagination>
         </el-main>
       </el-container>
+      <el-dialog title="编辑"
+                 :visible.sync="editFormVisible"
+                 :close-on-click-modal="false"
+                 class="edit-form"
+                 :before-close="handleClose">
+        <el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
+          <el-form-item label="姓名" prop="name">
+            <el-input v-model="editForm.name" auto-complete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="手机号" prop="phone_number">
+            <el-input v-model="editForm.phone_number" auto-complete="off" disabled="true"></el-input>
+          </el-form-item>
+          <el-form-item label="权限">
+            <el-select v-model="editForm.level" placeholder="权限">
+              <el-option label="高(3)" value="3"></el-option>
+              <el-option label="中(2)" value="2"></el-option>
+              <el-option label="低(1)" value="1"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="准入时间">
+            <el-time-picker
+              is-range
+              v-model="editForm.timespan"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              placeholder="选择时间范围"
+              value-format="HH:mm:ss">
+            </el-time-picker>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click.native="handleCancel('editForm')">取消</el-button>
+          <el-button type="primary" @click.native="handleUpdate('editForm')">更新</el-button>
+        </div>
+      </el-dialog>
+      <el-dialog title="人脸照片更新"
+                 :visible.sync="editFormVisible_face"
+                 :close-on-click-modal="false"
+                 class="edit-face"
+                 :before-close="handleClose_face">
+        <el-form>
+          <el-form-item label="手机号" prop="phone_number">
+            <el-input v-model="editPhone" auto-complete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <el-upload
+          class="avatar-uploader"
+          :limit="1"
+          :action="faceURL"
+          :headers="headers"
+          :on-remove="removeChange"
+          :on-error="uploadError"
+          :on-change="fileChange"
+          :before-upload="beforeAvatarUpload"
+          :auto-upload="false"
+          align="center">
+          <img v-if="licenseImageUrl" :src="licenseImageUrl" class="avatar">
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click.native="handleCancel_face('editForm')">取消</el-button>
+          <el-button type="primary" @click.native="handleUpdate_face('editForm')">更新</el-button>
+        </div>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'WhiteList',
+  computed: {
+    headers () {
+      return {
+        'Authorization': 'Token ' + localStorage.getItem('token')
+      }
+    }
+  },
+  mounted () {
+    const auth = 'Token ' + localStorage.getItem('token')
+    const header = {'Authorization': auth}
+    axios.get('http://127.0.0.1:8000/api/admin/whitelist/all', {'headers': header}).then(response => {
+      this.tableData = response.data
+      this.loading = false
+    })
+  },
   data () {
     return {
-      loading: false,
+      editForm: {},
+      editURL: this.localAPI + 'admin/whitelist/edit',
+      editFormVisible: false, // 默认不显示编辑弹层
+      delURL: this.localAPI + 'admin/whitelist/del',
+      editFormVisible_face: false,
+      licenseImageUrl: '',
+      editPhone: '',
+      loading: true,
       currentPage: 1, // 当前页码
       total: 0, // 总条数
       pageSize: 10, // 每页的数据条数
       activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
       search: '',
-      tableData: [{
-        name: '王小虎',
-        is_superuser: '是',
-        permission_data: [{
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }, {
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }]
-      }, {
-        name: '王小虎',
-        is_superuser: '是',
-        last_login: '2021-07-20 13:14:59',
-        permission_data: [{
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }, {
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }]
-      }, {
-        name: '小虎',
-        is_superuser: '否',
-        last_login: '2021-07-20 13:14:59',
-        permission_data: [{
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }, {
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }]
-      }, {
-        name: '王小虎',
-        is_superuser: '是',
-        last_login: '2020-07-20 13:14:59',
-        permission_data: [{
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }, {
-          area: '仓库',
-          time: '10:00 - 16:00'
-        }]
-      }]
+      tableData: []
     }
   },
   methods: {
+    // 点击编辑
+    handleEdit (index, row) {
+      this.editFormVisible = true
+      this.editForm = Object.assign({}, row) // 这句是关键！！！
+      this.editForm.timespan = []
+      this.editForm.timespan.push(row.time_start)
+      this.editForm.timespan.push(row.time_end)
+      console.log(this.editForm.timespan)
+    },
+    handleFace (index, row) {
+      this.editFormVisible_face = true
+      this.editPhone = row.phone_number
+      console.log(this.editPhone)
+    },
+    // 点击关闭dialog
+    handleClose (done) {
+      /* done();
+      location.reload(); */
+      this.editFormVisible = false
+    },
+    // 点击取消
+    handleCancel (formName) {
+      this.editFormVisible = false
+    },
+    // 点击更新
+    handleUpdate (forName) {
+      // 更新的时候就把弹出来的表单中的数据写到要修改的表格中
+      // var postData = {
+      //   name: this.editForm.name;
+      // }
+      // 这里再向后台发个post请求重新渲染表格数据
+      let formData = new FormData()
+      formData.append('name', this.editForm.name)
+      formData.append('phone_number', this.editForm.phone_number)
+      formData.append('time_span', this.editForm.timespan)
+      formData.append('level', this.editForm.level)
+      axios.post(this.editURL, formData, {'headers': this.headers}).then(res => {
+        const {result, errorInfo} = res.data
+        if (result === true) {
+          this.$message({
+            showClose: true,
+            message: '编辑成功',
+            type: 'success'
+          })
+          this.loading = true
+          axios.get('http://127.0.0.1:8000/api/admin/whitelist/all', {'headers': this.headers}).then(response => {
+            this.tableData = response.data
+            this.loading = false
+          })
+        } else {
+          this.$message({
+            showClose: true,
+            message: errorInfo,
+            type: 'error'
+          })
+        }
+      })
+      this.editFormVisible = false
+    },
+    handleDelete (index, row) {
+      let formData = new FormData()
+      formData.append('phone_number', row.phone_number)
+      console.log(row.phone_number)
+      axios.post(this.delURL, formData, {'headers': this.headers}).then(res => {
+        const {result, errorInfo} = res.data
+        if (result === true) {
+          this.$message({
+            showClose: true,
+            message: '删除成功',
+            type: 'success'
+          })
+          this.loading = true
+          axios.get('http://127.0.0.1:8000/api/admin/whitelist/all', {'headers': this.headers}).then(response => {
+            this.tableData = response.data
+            this.loading = false
+          })
+        } else {
+          this.$message({
+            showClose: true,
+            message: errorInfo,
+            type: 'error'
+          })
+        }
+      })
+    },
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
       this.$router.push(key)
@@ -244,6 +366,48 @@ export default {
     handleCurrentChange (val) {
       console.log(`当前页: ${val}`)
       this.currentPage = val
+    },
+    fileChange (file) {
+      this.form.file = file
+    },
+    beforeAvatarUpload (file) {
+      // eslint-disable-next-line no-redeclare
+      const isJPG = file.type === 'image/jpeg'
+      const isLt10M = file.size / 1024 / 1024 < 10
+      if (this.form.phone === '') {
+        this.$message.error('请先输入手机号')
+        return false
+      }
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!')
+      }
+      if (!isLt10M) {
+        this.$message.error('上传头像图片大小不能超过 10MB!')
+      }
+      return isJPG && isLt10M
+    },
+    // eslint-disable-next-line handle-callback-err
+    uploadError (err, file, filelist) {
+      this.$message.error('上传失败')
+    },
+    removeChange (file, fileList) {
+      console.log('你要移除的文件为', file.name)
+    },
+    // eslint-disable-next-line handle-callback-err
+    submitUpload () {
+      let formData = new FormData()
+      formData.append('phone', this.form.phone)
+      formData.append('face', this.form.file.raw)
+      console.log(formData.get('face'))
+      console.log(formData.get('phone'))
+      axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
+        this.$message.success('上传成功')
+        this.licenseImageUrl = this.localMedia + res.data
+        console.log(this.licenseImageUrl)
+        // eslint-disable-next-line handle-callback-err
+      }).catch(err => {
+        this.$message.error('上传失败')
+      })
     }
   }
 }
@@ -257,8 +421,7 @@ export default {
 .main {
   left: 200px;
   top: 80px;
-  /*position: absolute;*/
-  margin: 0 auto;
+  position: absolute;
 }
 
 .user-menu {
@@ -266,19 +429,34 @@ export default {
   top: 5px;
 }
 
-.detail_table {
-  left: 15%;
-}
-
 .search {
   display: inline-block;
 }
 
-.main_table {
-  margin: 0 auto;
-  position: absolute;
-  top: 15%;
-  left: 20%;
-}
+</style>
 
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409EFF;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

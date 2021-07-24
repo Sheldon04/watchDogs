@@ -114,32 +114,42 @@
             <el-table-column
               prop="date"
               label="时间"
-              width="200">
+              width="200"
+              align="center">
+              <template slot-scope="scope">
+                <el-icon name="time"></el-icon>
+                <span style="margin-left: 10px">{{ scope.row.date }}</span>
+              </template>
             </el-table-column>
             <el-table-column
               prop="level"
               label="报警级别"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="camera_id"
               label="摄像头"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="area"
               label="报警区域"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="invation_num"
               label="入侵数量"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               fixed="right"
               label="操作"
-              width="100">
+              width="100"
+              align="center">
               <template slot-scope="scope">
                 <el-button @click="handleClick(scope.row)" type="text" size="small">查看详情</el-button>
               </template>
@@ -169,14 +179,9 @@
 .submenu-title {
   font-size: 18px !important;
 }
-.main-table {
-  top: 160px;
-  left: 220px;
-  position: absolute;
-}
-.main-table2 {
-  top: 90px;
-  left: 220px;
+.main {
+  left: 200px;
+  top: 80px;
   position: absolute;
 }
 </style>

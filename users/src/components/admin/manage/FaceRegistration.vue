@@ -82,15 +82,9 @@
             </el-form-item>
             <el-form-item label="权限">
               <el-select v-model="form.level" placeholder="权限">
-                <el-option label="高" value="3"></el-option>
-                <el-option label="中" value="2"></el-option>
-                <el-option label="低" value="1"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="准入区域">
-              <el-select v-model="form.area" placeholder="请选择准入区域">
-                <el-option label="仓库" value="1"></el-option>
-                <el-option label="门店" value="2"></el-option>
+                <el-option label="高(3)" value="3"></el-option>
+                <el-option label="中(2)" value="2"></el-option>
+                <el-option label="低(1)" value="1"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="准入时间">
@@ -146,7 +140,7 @@ export default {
     return {
       activeIndex: this.$route.path,
       uploadURL: this.localAPI + 'admin/uploadface',
-      regURL: this.localAPI + 'admin/whitelist',
+      regURL: this.localAPI + 'admin/whitelist/add',
       imgSrc: require('../../../assets/img3.jpg'),
       licenseImageUrl: '',
       form: {
@@ -209,7 +203,6 @@ export default {
     submitReg () {
       let formData = new FormData()
       formData.append('name', this.form.username)
-      formData.append('area', this.form.area)
       formData.append('phone_number', this.form.phone)
       formData.append('time_span', this.form.timespan)
       formData.append('level', this.form.level)
@@ -230,7 +223,6 @@ export default {
             type: 'error'
           })
           console.log(formData.get('name'))
-          console.log(formData.get('area'))
           console.log(formData.get('phone_number'))
           console.log(formData.get('time_span'))
         }

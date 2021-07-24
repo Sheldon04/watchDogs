@@ -84,23 +84,27 @@
               label="ID"
               width="100"
               type="index"
+              align="center"
               sortable>
             </el-table-column>
             <el-table-column
               prop="username"
               label="姓名"
               width="200"
+              align="center"
               sortable>
             </el-table-column>
             <el-table-column
               prop="email"
               label="邮箱"
+              align="center"
               width="200">
             </el-table-column>
             <el-table-column
               :formatter = "formatter"
               prop="is_superuser"
               label="是否为管理员"
+              align="center"
               width="200"
               :filters="[{ text: '是', value: '是' }, { text: '否', value: '否' }]"
               :filter-method="filterHandler">
@@ -108,6 +112,7 @@
             <el-table-column
               prop="last_login"
               label="最近一次登录"
+              align="center"
               width="200"
               sortable>
             </el-table-column>
