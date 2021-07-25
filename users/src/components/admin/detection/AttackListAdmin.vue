@@ -73,7 +73,7 @@
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <table class="main-table2">
+          <table>
             <tr>
               <td>按日期选择</td>
               <td>
@@ -106,7 +106,6 @@
           <br>
           <br>
           <el-table
-            class="main-table"
             v-loading="loading"
             :data="tableData"
             style="width: 1000px"
@@ -169,20 +168,25 @@
 </template>
 
 <style scoped>
-.el-table .warning-row {
-  background-color: oldlace;
-}
-
-.el-table .common-row {
-  background-color: #f0f9eb;
-}
-.submenu-title {
-  font-size: 18px !important;
-}
 .main {
   left: 200px;
   top: 80px;
   position: absolute;
+}
+
+.user-menu {
+  left: 50px;
+  top: 5px;
+}
+</style>
+
+<style>
+.el-table .warning-row {
+  background: #fbede5;
+}
+
+.el-table .common-row {
+  background: #fbfbe5;
 }
 </style>
 
@@ -216,13 +220,13 @@ export default {
       console.log(formData.get('date'))
       console.log(formData.get('time_span'))
     },
-    tableRowClassName ({row, rowIndex}) {
-      if (row.level === '严重') {
+    tableRowClassName ({row, index}) {
+      if (row.level === 3) {
         return 'warning-row'
-      } else if (row.level === '中等') {
+      } else if (row.level === 2) {
         return 'common-row'
       }
-      return 'other'
+      return ''
     },
     handleSizeChange (val) {
       console.log(`每页 ${val} 条`)
@@ -240,6 +244,7 @@ export default {
     handleClick (row) {
       console.log(this.timespan)
       console.log(this.date)
+      console.log(row.className)
     }
   },
   data () {
@@ -283,23 +288,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.submenu-title {
-  font-size: 18px !important;
-}
-
-.el-table.warning-row {
-  background: oldlace;
-}
-
-.el-table.success-row {
-  background: #f0f9eb;
-}
-
-.user-menu {
-  left: 50px;
-  top: 5px;
-}
-
-</style>

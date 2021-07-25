@@ -5,7 +5,7 @@
         <el-header>
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
-        <el-aside>
+        <el-aside width="200px">
           <el-dropdown class="user-menu" placement="bottom-start">
            <span class="el-dropdown-link">
              <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
@@ -18,34 +18,67 @@
           </el-dropdown>
           <el-menu
             :default-active=activeIndex
-            class="el-menu-vertical-demo"
+            class="el-menu"
             @select="handleSelect">
-            <el-menu-item index="/user/monitor">
-              <i class="el-icon-camera"></i>
-              <span slot="title">实时监控</span>
-            </el-menu-item>
-            <el-menu-item index="/user/traceback">
-              <i class="el-icon-refresh"></i>
-              <span slot="title">入侵回放</span>
-            </el-menu-item>
-            <el-menu-item index="/user/attacklist">
-              <i class="el-icon-document"></i>
-              <span slot="title">查看记录</span>
-            </el-menu-item>
-            <el-menu-item index="/user/attackinfo">
-              <i class="el-icon-setting"></i>
-              <span slot="title">入侵统计</span>
-            </el-menu-item>
+            <el-submenu index="1">
+              <template slot="title">
+                <i class="el-icon-view"></i>
+                <span>入侵检测</span>
+              </template>
+              <el-menu-item index="/admin/monitor">
+                <i class="el-icon-camera"></i>
+                实时监控
+              </el-menu-item>
+              <el-menu-item index="/admin/traceback">
+                <i class="el-icon-refresh"></i>
+                入侵回放
+              </el-menu-item>
+              <el-menu-item index="/admin/attacklist">
+                <i class="el-icon-document"></i>
+                查看记录
+              </el-menu-item>
+              <el-menu-item index="/admin/attackinfo">
+                <i class="el-icon-setting"></i>
+                入侵统计
+              </el-menu-item>
+            </el-submenu>
+            <el-submenu index="2">
+              <template slot="title">
+                <i class="el-icon-user"></i>
+                <span>用户管理</span>
+              </template>
+              <el-menu-item index="/admin/facereg">
+                <i class="el-icon-camera"></i>
+                人脸识别注册
+              </el-menu-item>
+              <el-menu-item index="/admin/usermanage">
+                <i class="el-icon-document"></i>
+                用户信息管理
+              </el-menu-item>
+            </el-submenu>
+            <el-submenu index="3">
+              <template slot="title">
+                <i class="el-icon-setting"></i>
+                <span>监控设置</span>
+              </template>
+              <el-menu-item index="/admin/whitelist">
+                <i class="el-icon-document-checked"></i>
+                可信名单管理
+              </el-menu-item>
+              <el-menu-item index="/admin/segmentation">
+                <i class="el-icon-crop"></i>
+                监控区域划分
+              </el-menu-item>
+            </el-submenu>
           </el-menu>
         </el-aside>
         <el-main class="main">
-          <table class="main-table">
+          <table>
             <tr>
               <td>按日期选择</td>
               <td>
                 <el-date-picker
                   v-model="date"
-                  align="right"
                   type="date"
                   placeholder="选择日期"
                   :picker-options="pickerOptions"
@@ -80,32 +113,42 @@
             <el-table-column
               prop="date"
               label="时间"
-              width="200">
+              width="200"
+              align="center">
+              <template slot-scope="scope">
+                <el-icon name="time"></el-icon>
+                <span style="margin-left: 10px">{{ scope.row.date }}</span>
+              </template>
             </el-table-column>
             <el-table-column
               prop="level"
               label="报警级别"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="camera_id"
               label="摄像头"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="area"
               label="报警区域"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               prop="invation_num"
               label="入侵数量"
-              width="150">
+              width="150"
+              align="center">
             </el-table-column>
             <el-table-column
               fixed="right"
               label="操作"
-              width="100">
+              width="100"
+              align="center">
               <template slot-scope="scope">
                 <el-button @click="handleClick(scope.row)" type="text" size="small">查看详情</el-button>
               </template>
@@ -124,23 +167,7 @@
   </div>
 </template>
 
-<style>
-.main .el-table .warning-row {
-  background-color: oldlace;
-}
-
-.main .el-table .common-row {
-  background-color: #f0f9eb;
-}
-
-.el-menu {
-  width: 200px;
-  height: 800px;
-}
-.submenu-title {
-  font-size: 18px !important;
-}
-
+<style scoped>
 .main {
   left: 200px;
   top: 80px;
@@ -151,13 +178,22 @@
   left: 50px;
   top: 5px;
 }
+</style>
 
+<style>
+.el-table .warning-row {
+  background: #fbede5;
+}
+
+.el-table .common-row {
+  background: #fbfbe5;
+}
 </style>
 
 <script>
 import axios from 'axios'
 export default {
-  name: 'Monitor',
+  name: 'AttackListAdmin',
   mounted () {
     const auth = 'Token ' + localStorage.getItem('token')
     const header = {'Authorization': auth}
@@ -184,13 +220,13 @@ export default {
       console.log(formData.get('date'))
       console.log(formData.get('time_span'))
     },
-    tableRowClassName ({row, rowIndex}) {
-      if (row.level === '严重') {
+    tableRowClassName ({row, index}) {
+      if (row.level === 3) {
         return 'warning-row'
-      } else if (row.level === '中等') {
+      } else if (row.level === 2) {
         return 'common-row'
       }
-      return 'other'
+      return ''
     },
     handleSizeChange (val) {
       console.log(`每页 ${val} 条`)
@@ -208,6 +244,7 @@ export default {
     handleClick (row) {
       console.log(this.timespan)
       console.log(this.date)
+      console.log(row.className)
     }
   },
   data () {
