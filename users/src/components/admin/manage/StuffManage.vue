@@ -180,7 +180,8 @@ export default {
       editFormVisible: false,
       id_to_delete: '',
       editURL: this.localAPI + 'admin/edituser',
-      delURL: this.localAPI + 'admin/deluser'
+      delURL: this.localAPI + 'admin/deluser',
+      confirmDialogVisible: false
     }
   },
   methods: {
@@ -243,7 +244,7 @@ export default {
       this.confirmDialogVisible = false
       let formData = new FormData()
       formData.append('id', this.id_to_delete)
-      console.log(this.phone_to_delete)
+      console.log(this.id_to_delete)
       axios.post(this.delURL, formData, {'headers': this.headers}).then(res => {
         const {result, errorInfo} = res.data
         if (result === true) {
@@ -253,7 +254,7 @@ export default {
             type: 'success'
           })
           this.loading = true
-          axios.get('http://127.0.0.1:8000/api/admin/deluser', {'headers': this.headers}).then(response => {
+          axios.get('http://127.0.0.1:8000/api/admin/getall', {'headers': this.headers}).then(response => {
             this.tableData = response.data
             this.loading = false
           })
