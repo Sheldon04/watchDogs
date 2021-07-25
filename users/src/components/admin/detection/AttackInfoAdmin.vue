@@ -152,6 +152,12 @@ export default {
           trigger: 'item'
         },
 
+        toolbox: {
+          feature: {
+            restore: {},
+            saveAsImage: {}
+          }
+        },
         visualMap: {
           show: false,
           min: 80,
@@ -211,6 +217,15 @@ export default {
           textStyle: {
             color: '#ccc'
           }
+        },
+        toolbox: {
+          feature: {
+            restore: {},
+            saveAsImage: {}
+          }
+        },
+        tooltip: {
+          trigger: 'item'
         },
         radar: {
           // shape: 'circle',
