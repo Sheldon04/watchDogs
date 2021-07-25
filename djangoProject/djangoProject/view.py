@@ -3,6 +3,8 @@
 import datetime
 import json
 import os
+import random
+import arrow
 import time
 
 import cv2
@@ -122,11 +124,6 @@ def user_update(request):
 
     return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
 
-#增加用户
-@api_view(['POST'])
-def user_reg(request):
-    id = request.POST.get("id")
-
 def gen(d):
     while True:
         for frame, _, _, _ in d.run():
@@ -143,6 +140,19 @@ def gen(d):
 def send_video(request):
     d = Detector(1)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
+
+def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
+    camera = cv2.VideoCapture(file_name)
+    if camera.isOpened():
+        while True:
+            ret, frame = camera.read()
+            if not ret:
+                break
+            flag, buffer = cv2.imencode('.jpg', frame)
+            if not flag:
+                continue
+            # print('send video')
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
 
 #视频回放调取视频
 @api_view(['GET'])
@@ -238,6 +248,42 @@ def get_invation_records(request):
     return JsonResponse(json.loads(response_data), safe=False)
 
 
+def isLeapYear(year):
+    '''
+    通过判断闰年，获取年份year的总天数
+    :param years: 年份，int
+    :return:days_sum，一年的总天数
+    '''
+    # 断言：年份不为整数时，抛出异常。
+    assert isinstance(year, int), "请输入整数年，如 2018"
+
+    if ((year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)):  # 判断是否是闰年
+        # print(years, "是闰年")
+        days_sum = 366
+        return days_sum
+    else:
+        # print(years, '不是闰年')
+        days_sum = 365
+        return days_sum
+
+@api_view(['GET'])
+@permission_classes((AllowAny,))
+#获取每天入侵数量
+def get_num_records_day(request):
+    start_year = 2021
+    current_year = datetime.datetime.now().year
+    mydict = {}
+    for i in range(start_year, current_year+1):
+        start_date = '%d-1-1' % i
+        for j in range(0, isLeapYear(i)-300):
+            date = arrow.get(start_date).shift(days=j).format("YYYY-MM-DD")
+            day_choose = datetime.datetime.strptime(date,'%Y-%m-%d')
+            invation_list = invationRecord.objects.filter(date=date)
+            mydict[date] = invation_list.count()
+
+    return JsonResponse({'dict':mydict})
+
+
 @api_view(['POST'])
 #获取一个月的入侵记录
 #request: Year-month
@@ -259,20 +305,6 @@ def get_month_records(request):
 
     response_data =json.dumps(list(invation_list),cls=DateEncoder,indent= 4)
     return Response(dict)
-
-def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
-    camera = cv2.VideoCapture(file_name)
-    if camera.isOpened():
-        while True:
-            ret, frame = camera.read()
-            if not ret:
-                break
-            flag, buffer = cv2.imencode('.jpg', frame)
-            if not flag:
-                continue
-            # print('send video')
-            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
-
 
 #白名单
 #增
@@ -383,3 +415,62 @@ def whitelist_delete(request):
         error_info = '删除失败'
 
     return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
+
+@api_view(['POST'])
+def get_user_by_username(request):
+    username = request.POST.get('username')
+    user_info = User.objects.filter(username=username)
+    ret = []
+    trans = {
+        'username': '用户名', 'email': '邮箱', 'is_superuser': '是否为管理员', 'last_login': '最近一次登录', 'first_name': '名',
+        'last_name': '姓', 'date_joined': '注册日期', 'auth_token': 'Token'
+    }
+    # print(list(user_info.values("username", "email", "is_superuser", "last_login", "first_name", "last_name", "date_joined", "auth_token")))
+    for key, value in list(user_info.values("username", "email", "is_superuser", "last_login", "first_name", "last_name", "date_joined", "auth_token"))[0].items():
+        if value == True:
+            value = 'Ture'
+        elif value == False:
+            value = 'False'
+        print('key ',trans[key], 'value ', value)
+        ret.append({'key': trans[key], 'value': value})
+    response_data = json.dumps(
+        ret,
+        cls=DateEncoder)
+    return JsonResponse(json.loads(response_data), safe=False)
+
+@api_view(['POST'])
+def change_password(request):
+    detail = {}
+    error_info=''
+    result = True
+    username = request.POST.get('username')
+    newpass = request.POST.get('password')
+    user = User.objects.get(username=username)
+    print('user ', user)
+    if user == None:
+        error_info = '用户不存在'
+        result = False
+    user.set_password(newpass)
+    user.save()
+    return JsonResponse({'result':result,'detail':detail,'errorInfo':error_info})
+
+#增加用户
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def user_reg(request):
+    result = True
+    detail = {}
+    error_info = ''
+    username = request.POST.get("username")
+    phone_number = request.POST.get("phone_number")
+    email = request.POST.get("email")
+    password = request.POST.get("password")
+    user = User()
+    user.username = username
+    user.email = email
+    user.set_password(password)
+    # user.phone_number = phone_number
+    ret = user.save()
+    print(ret)
+    return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})

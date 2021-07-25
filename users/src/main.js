@@ -9,6 +9,8 @@ import axios from 'axios'
 import api from './router/api'
 import VideoPlayer from 'vue-video-player'
 import 'videojs-flash'
+import * as echarts from 'echarts'
+Vue.prototype.echarts = echarts
 // import 'videojs-contrib-hls'// 不确定是否需要了
 require('video.js/dist/video-js.css')
 require('vue-video-player/src/custom-theme.css')
@@ -30,13 +32,24 @@ new Vue({
 })
 
 router.beforeEach((to, from, next) => {
-  console.log('from: ', from.fullPath.split('/'))
-  console.log('to: ', to.fullPath)
-  if (from.fullPath === '/') {
+  console.log(localStorage.getItem('token'))
+  // 先判断浏览器中是否已经有token了，有则true，否则false
+  const isLogin = localStorage.getItem('token')
+  // 然后判断要去往的页面，如果是去往login页面的，就直接放行
+  // 如果不是去往login和register页面，则判断有没有token，如果有token就放行，否则就跳转login页面
+  if (to.path === '/') {
     next(true)
-  } else if (to.fullPath.split('/')[1] !== from.fullPath.split('/')[1]) {
-    next(false)
   } else {
-    next(true)
+    if (isLogin) {
+      if (from.fullPath === '/') {
+        next(true)
+      } else if (to.fullPath.split('/')[1] !== from.fullPath.split('/')[1]) {
+        next(false)
+      } else {
+        next(true)
+      }
+    } else {
+      next('/')
+    }
   }
 })

@@ -42,7 +42,8 @@
           </tr>
           <tr>
             <td colspan="2">
-              <el-link href="https://element.eleme.io" target="_blank" style="width: 300px" >没有账号？注册</el-link>
+              <!--              <el-link href="https://element.eleme.io" target="_blank" style="width: 300px" >没有账号？注册</el-link>-->
+              <el-button style="width: 300px" @click="register" type="text">没有账号？注册</el-button>
             </td>
           </tr>
         </table>
@@ -51,6 +52,26 @@
     <div class="background">
       <img :src="imgSrc" width="100%" height="100%" alt="" />
     </div>
+    <el-dialog title="注册新用户" :visible.sync="dialogRegisterVisible" width="600px">
+      <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="ruleForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电子邮箱" prop="email">
+          <el-input v-model="ruleForm.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="pass">
+          <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="确认密码" prop="checkPass">
+          <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitRegisterForm('ruleForm')">提交</el-button>
+          <el-button @click="resetForm('ruleForm')">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -59,9 +80,29 @@ import axios from 'axios'
 export default {
   // 单页面中不支持前面的data:{}方式
   data () {
+    var validatePass = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入密码'))
+      } else {
+        if (this.ruleForm.checkPass !== '') {
+          this.$refs.ruleForm.validateField('checkPass')
+        }
+        callback()
+      }
+    }
+    var validatePass2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'))
+      } else if (value !== this.ruleForm.pass) {
+        callback(new Error('两次输入密码不一致!'))
+      } else {
+        callback()
+      }
+    }
     const rolesOptions = ['用户', '管理员']
     // 相当于以前的function data(){},这是es5之前的写法，新版本可以省略掉function
     return {
+      dialogRegisterVisible: false,
       user: {
         is_superuser: 0, // or 'admin'
         username: '',
@@ -70,7 +111,21 @@ export default {
       },
       imgSrc: require('../assets/img1.png'),
       checkedRoles: [],
-      roles: rolesOptions
+      roles: rolesOptions,
+      ruleForm: {
+        username: '',
+        email: '',
+        pass: '',
+        checkPass: ''
+      },
+      rules: {
+        pass: [
+          { validator: validatePass, trigger: 'blur' }
+        ],
+        checkPass: [
+          { validator: validatePass2, trigger: 'blur' }
+        ]
+      }
     }
   },
   methods: {
@@ -94,6 +149,7 @@ export default {
           } else {
             this.$router.push('/user/monitor')
           }
+          localStorage.setItem('username', this.user.username)
         } else {
           this.$message({
             showClose: true,
@@ -103,6 +159,43 @@ export default {
           console.log('?????????failed???????')
         }
       })
+    },
+    submitRegisterForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let formData = new FormData()
+          formData.append('username', this.ruleForm.username) // 2021-7-10
+          formData.append('password', this.ruleForm.pass) // 2021-7-10
+          formData.append('phone_number', this.ruleForm.phone_number) // 2021-7-10
+          formData.append('email', this.ruleForm.email) // 2021-7-10
+          const auth = 'Token ' + localStorage.getItem('token')
+          const header = {'Authorization': auth}
+          axios.post('http://127.0.0.1:8000/api/admin/adduser', formData, {'headers': header}).then(response => {
+            console.log(response.data)
+            if (response.data.result) {
+              this.$message({
+                message: '注册成功',
+                type: 'success'
+              })
+            } else {
+              this.$message.error(response.data.errorInfo)
+            }
+          })
+        } else {
+          this.$message({
+            message: '输入不合法，请检查您的输入',
+            type: 'warning'
+          })
+          return false
+        }
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    register () {
+      console.log('tt')
+      this.dialogRegisterVisible = true
     }
   }
 }

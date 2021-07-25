@@ -5,98 +5,35 @@
         <el-header>
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
-        <el-aside width="200px">
-          <el-dropdown class="user-menu" placement="bottom-start">
-           <span class="el-dropdown-link">
-             <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-           </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>修改密码</el-dropdown-item>
-              <el-dropdown-item>注销</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-menu
-            :default-active=activeIndex
-            class="el-menu"
-            @select="handleSelect">
-            <el-submenu index="1">
-              <template slot="title">
-                <i class="el-icon-view"></i>
-                <span>入侵检测</span>
-              </template>
-              <el-menu-item index="/admin/monitor">
-                <i class="el-icon-camera"></i>
-                实时监控
-              </el-menu-item>
-              <el-menu-item index="/admin/traceback">
-                <i class="el-icon-refresh"></i>
-                入侵回放
-              </el-menu-item>
-              <el-menu-item index="/admin/attacklist">
-                <i class="el-icon-document"></i>
-                查看记录
-              </el-menu-item>
-              <el-menu-item index="/admin/attackinfo">
-                <i class="el-icon-setting"></i>
-                入侵统计
-              </el-menu-item>
-            </el-submenu>
-            <el-submenu index="2">
-              <template slot="title">
-                <i class="el-icon-user"></i>
-                <span>用户管理</span>
-              </template>
-              <el-menu-item index="/admin/facereg">
-                <i class="el-icon-camera"></i>
-                人脸识别注册
-              </el-menu-item>
-              <el-menu-item index="/admin/usermanage">
-                <i class="el-icon-document"></i>
-                用户信息管理
-              </el-menu-item>
-            </el-submenu>
-            <el-submenu index="3">
-              <template slot="title">
-                <i class="el-icon-setting"></i>
-                <span>监控设置</span>
-              </template>
-              <el-menu-item index="/admin/whitelist">
-                <i class="el-icon-document-checked"></i>
-                可信名单管理
-              </el-menu-item>
-              <el-menu-item index="/admin/segmentation">
-                <i class="el-icon-crop"></i>
-                监控区域划分
-              </el-menu-item>
-            </el-submenu>
-          </el-menu>
+        <el-aside>
+          <my-dropdown></my-dropdown>
+          <my-sidenav-admin></my-sidenav-admin>
         </el-aside>
         <el-main class="main">
-          <table>
-            <tr>
-              <td>按日期选择</td>
-              <td>
-                <el-date-picker
-                  v-model="value2"
-                  align="right"
-                  type="date"
-                  placeholder="选择日期"
-                  :picker-options="pickerOptions">
-                </el-date-picker>
-              </td>
-              <td>最近的侵入记录</td>
-              <td>
-                <el-select v-model="value" placeholder="请选择">
-                  <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
-                </el-select>
-              </td>
-            </tr>
-          </table>
+          <el-row :gutter="20">
+            <el-col :span="20">
+              <el-card header="表1" style="font-weight: bold;">
+                <div ref="chart1" style="height: 350px;">
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="20">
+              <el-card header="表2" style="font-weight: bold;">
+                <div ref="chart2" style="height: 450px;">
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="20">
+              <el-card header="表3" style="font-weight: bold;">
+                <div ref="chart3" style="height: 450px;">
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
         </el-main>
       </el-container>
     </div>
@@ -104,40 +41,230 @@
 </template>
 
 <script>
+import MyDropdown from '../../public/Dropdown'
+import MySidenavAdmin from '../../public/SideNavAdmin'
 export default {
-  name: 'AttackInfoAdmin',
+  name: 'AttackInfoUser',
+  components: {MySidenavAdmin, MyDropdown},
+  mounted () {
+    this.initChart1()
+    this.initChart2()
+    this.initChart3()
+  },
   data () {
     return {
-      activeIndex: this.$route.path,
       imgSrc: require('../../../assets/img3.jpg'),
       options: [],
-      value: ''
+      value: '',
+      data: []
     }
   },
   methods: {
-    handleSelect (key, keyPath) {
-      console.log(key, keyPath)
-      this.$router.push(key)
+    initChart1 () {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.echarts.init(this.$refs.chart1)
+
+      let base = +new Date(2021, 1, 1)
+      let oneDay = 24 * 3600 * 1000
+
+      let data = [[base, Math.random() * 10]]
+
+      for (var i = 1; i < 1000; i++) {
+        var now = new Date(base += oneDay)
+        // console.log(now.getFullYear())
+        // console.log(now.getMonth())
+        // console.log(now.getDate())
+        console.log([now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'))
+        data.push([
+          [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'),
+          Math.abs(Math.round((Math.random() - 0.5) * 20 + data[i - 1][1]))
+        ])
+      }
+
+      let option = {
+        backgroundColor: '#2c343c',
+        tooltip: {
+          trigger: 'axis',
+          position: function (pt) {
+            return [pt[0], '10%']
+          }
+        },
+        title: {
+          left: 'center',
+          text: '入侵大数据监控折线图',
+          textStyle: {
+            color: '#ccc'
+          }
+        },
+        toolbox: {
+          feature: {
+            restore: {},
+            saveAsImage: {}
+          }
+        },
+        xAxis: {
+          type: 'time',
+          boundaryGap: false
+        },
+        yAxis: {
+          type: 'value',
+          boundaryGap: [0, '100%']
+        },
+        dataZoom: [{
+          type: 'inside',
+          start: 0,
+          end: 20
+        }, {
+          start: 0,
+          end: 20
+        }],
+        series: [
+          {
+            name: '模拟数据',
+            type: 'line',
+            smooth: true,
+            symbol: 'none',
+            areaStyle: {},
+            data: data
+          }
+        ]
+      }
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option)
+    },
+    initChart2 () {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.echarts.init(this.$refs.chart2)
+
+      let option = {
+        backgroundColor: '#2c343c',
+
+        title: {
+          text: '入侵报警级别饼状图',
+          left: 'center',
+          top: 20,
+          textStyle: {
+            color: '#ccc'
+          }
+        },
+
+        tooltip: {
+          trigger: 'item'
+        },
+
+        visualMap: {
+          show: false,
+          min: 80,
+          max: 600,
+          inRange: {
+            colorLightness: [0, 1]
+          }
+        },
+        series: [
+          {
+            name: '访问来源',
+            type: 'pie',
+            radius: '55%',
+            center: ['50%', '50%'],
+            data: [
+              {value: 400, name: '普通报警'},
+              {value: 300, name: '中等报警'},
+              {value: 100, name: '严重报警'}
+            ].sort(function (a, b) { return a.value - b.value }),
+            roseType: 'radius',
+            label: {
+              color: 'rgba(255, 255, 255, 0.3)'
+            },
+            labelLine: {
+              lineStyle: {
+                color: 'rgba(255, 255, 255, 0.3)'
+              },
+              smooth: 0.2,
+              length: 10,
+              length2: 20
+            },
+            itemStyle: {
+              color: '#c23531',
+              shadowBlur: 200,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            },
+
+            animationType: 'scale',
+            animationEasing: 'elasticOut',
+            animationDelay: function (idx) {
+              return Math.random() * 200
+            }
+          }
+        ]
+      }
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option)
+    },
+    initChart3 () {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.echarts.init(this.$refs.chart3)
+
+      let option = {
+        backgroundColor: '#2c343c',
+        title: {
+          text: '入侵时间分布雷达图',
+          textStyle: {
+            color: '#ccc'
+          }
+        },
+        radar: {
+          // shape: 'circle',
+          indicator: [
+            {name: '0点-4点', max: 6500},
+            {name: '4点-8点', max: 16000},
+            {name: '8点-12点', max: 30000},
+            {name: '12点-16点', max: 38000},
+            {name: '16点-20点', max: 52000},
+            {name: '20点-24点', max: 25000}
+          ]
+        },
+        series: [{
+          name: '入侵次数',
+          type: 'radar',
+          data: [
+            {
+              value: [4200, 3000, 20000, 35000, 50000, 18000],
+              itemStyle: {
+                normal: {
+                  color: '#c23531',
+                  lineStyle: {
+                    color: '#c23531'
+                  }
+                }
+              }
+            }
+          ]
+        }]
+      }
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option)
     }
   }
 }
 </script>
 
 <style scoped>
-
-.submenu-title {
-  font-size: 18px !important;
-}
-
-.main {
-  left: 200px;
-  top: 80px;
-  position: absolute;
+.el-menu {
+  width: 200px;
+  height: 800px;
 }
 
 .user-menu {
   left: 50px;
   top: 5px;
+}
+
+.main {
+  width: 1200px;
+  height: 1000px;
+  left: 280px;
+  top: 100px;
+  position: absolute;
 }
 
 </style>

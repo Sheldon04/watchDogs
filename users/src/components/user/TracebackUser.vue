@@ -6,37 +6,8 @@
           <img :src="imgSrc" width="100%" height="100%" alt="" />
         </el-header>
         <el-aside width="200px">
-          <el-dropdown class="user-menu" placement="bottom-start">
-           <span class="el-dropdown-link">
-             <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-           </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>个人信息</el-dropdown-item>
-              <el-dropdown-item>修改密码</el-dropdown-item>
-              <el-dropdown-item>注销</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-menu
-            :default-active=activeIndex
-            class="el-menu-vertical-demo"
-            @select="handleSelect">
-            <el-menu-item index="/user/monitor">
-              <i class="el-icon-camera"></i>
-              <span slot="title">实时监控</span>
-            </el-menu-item>
-            <el-menu-item index="/user/traceback">
-              <i class="el-icon-refresh"></i>
-              <span slot="title">入侵回放</span>
-            </el-menu-item>
-            <el-menu-item index="/user/attacklist">
-              <i class="el-icon-document"></i>
-              <span slot="title">查看记录</span>
-            </el-menu-item>
-            <el-menu-item index="/user/attackinfo">
-              <i class="el-icon-setting"></i>
-              <span slot="title">入侵统计</span>
-            </el-menu-item>
-          </el-menu>
+          <my-dropdown></my-dropdown>
+          <my-sidnav-user></my-sidnav-user>
         </el-aside>
         <el-main class="main">
           <el-calendar v-loading="loading" :first-day-of-week=7>
@@ -85,15 +56,17 @@
 <script>
 // eslint-disable-next-line no-unused-vars
 import axios from 'axios'
+import MyDropdown from '../public/Dropdown'
+import MySidnavUser from '../public/SideNavUser'
 
 export default {
   name: 'Monitor',
+  components: {MySidnavUser, MyDropdown},
   data () {
     return {
       loading: true,
       dia_loading: false,
       dialogMediaVisible: false,
-      activeIndex: this.$route.path,
       imgSrc: require('../../assets/img3.jpg'),
       options: [],
       value: '',
@@ -105,10 +78,6 @@ export default {
     }
   },
   methods: {
-    handleSelect (key, keyPath) {
-      console.log(key, keyPath)
-      this.$router.push(key)
-    },
     set_cur_month () {
       let nowDate = new Date()
       this.cur_month = nowDate.getMonth() + 1

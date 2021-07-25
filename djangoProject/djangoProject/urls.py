@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/video', view.send_video), #视频监控地址
     path('api/user/login', view.login), #登陆
     path('api/admin/getall', view.get_all_users), #获取所有用户信息
+    path('api/admin/getuserbyname', view.get_user_by_username), #获取指定用户信息
+    path('api/changepass', view.change_password), #修改密码
     path('api/admin/adduser', view.user_reg), #用户增
     path('api/admin/deluser', view.user_delete), #用户删
     path('api/admin/edituser', view.user_update), #用户改
@@ -33,6 +35,7 @@ urlpatterns = [
     path('api/attacklistuser/all', view.get_invation_records), #所有入侵记录
     path('api/attacklistuser', view.get_specific_invation_records), #指定时间入侵记录
     path('api/invationrecord/getmonth', view.get_month_records), #指定月份入侵记录
+    path('api/invationrecord/chart1', view.get_num_records_day), #入侵统计图chart1接口
     path('api/invationrecord/getvideo', view.get_video), #视频回放
     path('api/attacklistuser/invasiontime', view.get_specific_invation_time), #制定日期入侵记录时间
     path('api/admin/whitelist/add', view.whitelist_add), #注册白名单
