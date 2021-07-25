@@ -24,4 +24,3 @@ class WhiteList(models.Model):
     phone_number = models.IntegerField()
     time_start =models.TimeField()
     time_end = models.TimeField()
-    area =models.CharField(max_length=50)
