@@ -21,6 +21,6 @@ class invationRecord(models.Model):
 class WhiteList(models.Model):
     name = models.CharField(max_length=20)
     level = models.CharField(max_length=10)
-    phone_number = models.IntegerField()
+    phone_number = models.CharField(max_length=20)
     time_start =models.TimeField()
     time_end = models.TimeField()

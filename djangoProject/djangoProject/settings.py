@@ -173,3 +173,19 @@ CORS_ALLOW_HEADERS = (
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace('\\', '/')  # 设置静态文件路径为主目录下的media文件夹
 MEDIA_URL = '/media/'
+
+
+# 邮件配置
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
+
+EMAIL_HOST = 'mail.bjtu.edu.cn'  # 如果是 163 改成 smtp.163.com
+
+EMAIL_PORT = 25
+
+EMAIL_HOST_USER = '19301099@bjtu.edu.cn' # 帐号
+
+EMAIL_HOST_PASSWORD = '48766566'  # 授权码（****）
+
+# 默认邮件
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

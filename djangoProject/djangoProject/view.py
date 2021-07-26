@@ -10,6 +10,7 @@ import time
 import cv2
 from django.contrib import auth
 from django.core import serializers
+from django.core.mail import send_mail
 from django.http import StreamingHttpResponse, JsonResponse, HttpResponse
 
 from django.contrib.auth.models import User
@@ -22,6 +23,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 
 from datamodel import models
 from datamodel.models import invationRecord, WhiteList, mypicture
+from djangoProject import settings
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
 
@@ -198,6 +200,7 @@ def get_face(request):
 @api_view(['POST'])
 #@permission_classes((AllowAny,))
 def update_face(request):
+    del_path = ''
     phone = request.POST.get('phone_number')
     img = request.FILES.get('face')
     #phone = '222'
@@ -406,6 +409,12 @@ def whitelist_delete(request):
     error_info=''
     whitelist = WhiteList.objects
     phone_number = request.POST.get('phone_number')
+    try:
+        old = mypicture.objects.filter(phone=phone_number).first()
+        del_path = './media/' + old.photo.name
+        os.remove(del_path)
+    except:
+        print('delete failed')
     if(whitelist.filter(phone_number=phone_number).delete()):
         print("success")
         result = True
@@ -466,11 +475,41 @@ def user_reg(request):
     phone_number = request.POST.get("phone_number")
     email = request.POST.get("email")
     password = request.POST.get("password")
-    user = User()
-    user.username = username
-    user.email = email
-    user.set_password(password)
-    # user.phone_number = phone_number
-    ret = user.save()
-    print(ret)
+    try:
+        user = User()
+        user.username = username
+        user.email = email
+        user.set_password(password)
+        # user.phone_number = phone_number
+        ret = user.save()
+        result = True
+        print(ret)
+    except:
+        result = False
+        error_info = '用户已存在'
+
+    return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})
+
+#增加用户
+@api_view(['POST'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def send_my_email(request):
+    detail = {}
+    error_info=''
+    result = True
+    code = request.POST.get('code')
+    email = request.POST.get('email')
+    title = "美团骑手offer"
+    msg = "恭喜你成为美团骑手, 你的验证码是：" + code
+    email_from = settings.DEFAULT_FROM_EMAIL
+    reciever = [
+        email
+    ]
+    # 发送邮件
+    try:
+        send_mail(title, msg, email_from, reciever)
+    except:
+        result = False
+        error_info = '验证码发送失败'
     return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})

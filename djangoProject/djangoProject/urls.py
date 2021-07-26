@@ -26,7 +26,8 @@ urlpatterns = [
     path('api/admin/getall', view.get_all_users), #获取所有用户信息
     path('api/admin/getuserbyname', view.get_user_by_username), #获取指定用户信息
     path('api/changepass', view.change_password), #修改密码
-    path('api/admin/adduser', view.user_reg), #用户增
+    path('api/adduser', view.user_reg), #用户增
+    path('api/sendemail', view.send_my_email), #发送邮件
     path('api/admin/deluser', view.user_delete), #用户删
     path('api/admin/edituser', view.user_update), #用户改
     path('api/admin/uploadface', view.upload_face), #上传人脸照片
