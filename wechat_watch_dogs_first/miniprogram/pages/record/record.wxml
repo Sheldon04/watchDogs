@@ -1,0 +1,54 @@
+<view class="page" data-weui-theme="{{theme}}">
+    <view class="weui-cells__title">可选择指定日期区间或特定日期的指定时间区间</view>
+    <view class="weui-cells weui-cells_after-title">
+        <van-cell size="large" title="选择具体日期" value="{{ date }}" bind:click="calendarOnDisplay" />
+        <van-calendar min-date="{{ minDate }}" max-date="{{ maxDate }}" show="{{ calendarShow }}"
+            bind:close="calendarOnClose" bind:confirm="calendarOnConfirm" />
+        <van-cell size="large" title="选择初始时间" value="{{ startTime }}" is-link bind:click="showStartTimePopup" />
+        <van-cell size="large" title="选择截止时间" value="{{ endTime }}" is-link bind:click="showEndTimePopup" />
+    </view>
+    <view>
+        <button bindtap="search" type="primary" plain="true" class="loginBtn">查找</button>
+        <button bindtap="seeAll" type="primary" plain="true" class="registerBtn">查看全部</button>
+    </view>
+
+    <scroll-view scroll-x="true" class='scrollClass'>
+        <view class="table">
+            <view class="tr bg-w">
+                <view class="th">时间</view>
+                <view class="th">报警级别</view>
+                <view class="th ">摄像头</view>
+                <view class="th ">报警区域</view>
+                <view class="th ">入侵数量</view>
+            </view>
+            <block wx:for="{{listData}}">
+                <view class="tr bg-g" wx:if="{{index % 2 == 0}}">
+                    <view class="td">{{item.date}}</view>
+                    <view class="td">{{item.level}}</view>
+                    <view class="td">{{item.camera_id}}</view>
+                    <view class="td">{{item.area}}</view>
+                    <view class="td">{{item.invation_num}}</view>
+                </view>
+                <view class="tr" wx:else>
+                    <view class="td">{{item.date}}</view>
+                    <view class="td">{{item.level}}</view>
+                    <view class="td">{{item.camera_id}}</view>
+                    <view class="td">{{item.area}}</view>
+                    <view class="td">{{item.invation_num}}</view>
+                </view>
+            </block>
+        </view>
+    </scroll-view>
+</view>
+<view class="weui-cells weui-cells_after-title">
+    <van-popup show="{{ startTimeShow }}" position="bottom "
+        custom-style="height: 55%;" bind:close="startTimeOnClose">
+        <van-datetime-picker type="time" value="{{ startTime }}" min-time="{{ startMinTime }}"
+            max-time="{{ startMaxTime }}" bind:confirm="onStartConfirm" bind:cancel="startTimeOnClose" />
+    </van-popup>
+    <van-popup show="{{ endTimeShow }}" position="bottom" custom-style="height: 55%;"
+        bind:close="endTimeOnClose">
+        <van-datetime-picker type="time" value="{{ endTime }}" min-time="{{ endMinTime }}"
+            max-time="{{ endMaxTime }}" bind:confirm="onEndConfirm" bind:cancel="endTimeOnClose" />
+    </van-popup>
+</view>

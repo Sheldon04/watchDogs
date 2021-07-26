@@ -1,0 +1,12 @@
+<view class="weui-cells weui-cells_after-title">
+    <view class="weui-cell weui-cell_vcode">
+        <view class="weui-cell__hd">
+            <view class="weui-label">WatchDogs</view>
+        </view>
+    </view>
+    <view class="page__bd">
+        <!-- <van-image width="20rem" height="13rem" src="/image/jiankong.png" /> -->
+        <image id="1" class="img" style="width: 24rem; height: 13rem; background-color: #eeeeee;" src="{{url}}"></image>
+    </view>
+    <text>{{date}} {{time}}</text>
+</view>
