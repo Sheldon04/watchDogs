@@ -55,16 +55,20 @@
     <el-dialog title="注册新用户" :visible.sync="dialogRegisterVisible" width="600px">
       <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="ruleForm.username" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="电子邮箱" prop="email">
-          <el-input v-model="ruleForm.email" autocomplete="off"></el-input>
+          <el-input type="text" v-model="ruleForm.username" suffix-icon="el-icon-user"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="pass">
-          <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+          <el-input type="password" v-model="ruleForm.pass"></el-input>
         </el-form-item>
         <el-form-item label="确认密码" prop="checkPass">
-          <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
+          <el-input type="password" v-model="ruleForm.checkPass"></el-input>
+        </el-form-item>
+        <el-form-item label="电子邮箱" prop="email">
+          <el-input type="text" v-model="ruleForm.email" suffix-icon="el-icon-message" style="width: 350px"></el-input>
+          <el-button @click="sendCode">验证码</el-button>
+        </el-form-item>
+        <el-form-item label="验证码" prop="code">
+          <el-input type="text" v-model="ruleForm.code" style="width: 100px"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitRegisterForm('ruleForm')">提交</el-button>
@@ -80,7 +84,7 @@ import axios from 'axios'
 export default {
   // 单页面中不支持前面的data:{}方式
   data () {
-    var validatePass = (rule, value, callback) => {
+    let validatePass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
       } else {
@@ -90,11 +94,28 @@ export default {
         callback()
       }
     }
-    var validatePass2 = (rule, value, callback) => {
+    let validatePass2 = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请再次输入密码'))
       } else if (value !== this.ruleForm.pass) {
         callback(new Error('两次输入密码不一致!'))
+      } else {
+        callback()
+      }
+    }
+    // let validateEmail = (rule, value, callback) => {
+    //   let regEmail = /^[A-Za-zd]+([-_.][A-Za-zd]+)*@([A-Za-zd]+[-.])+[A-Za-zd]{2,5}$/
+    //   if (value === '') {
+    //     callback(new Error('邮箱不能为空'))
+    //   } else if (!regEmail.test(value)) {
+    //     callback(new Error('邮箱格式不正确!'))
+    //   } else {
+    //     callback()
+    //   }
+    // }
+    let validateCode = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('验证码不能为空'))
       } else {
         callback()
       }
@@ -116,14 +137,21 @@ export default {
         username: '',
         email: '',
         pass: '',
-        checkPass: ''
+        checkPass: '',
+        code: '',
+        validCode: ''
       },
       rules: {
         pass: [
-          { validator: validatePass, trigger: 'blur' }
+          {validator: validatePass, trigger: 'blur'}
         ],
         checkPass: [
-          { validator: validatePass2, trigger: 'blur' }
+          {validator: validatePass2, trigger: 'blur'}
+        ],
+        email: [
+        ],
+        code: [
+          {validator: validateCode, trigger: 'blur'}
         ]
       }
     }
@@ -162,7 +190,7 @@ export default {
     },
     submitRegisterForm (formName) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {
+        if (valid && this.ruleForm.validCode === this.ruleForm.code) {
           let formData = new FormData()
           formData.append('username', this.ruleForm.username) // 2021-7-10
           formData.append('password', this.ruleForm.pass) // 2021-7-10
@@ -170,23 +198,30 @@ export default {
           formData.append('email', this.ruleForm.email) // 2021-7-10
           const auth = 'Token ' + localStorage.getItem('token')
           const header = {'Authorization': auth}
-          axios.post('http://127.0.0.1:8000/api/admin/adduser', formData, {'headers': header}).then(response => {
+          axios.post('http://127.0.0.1:8000/api/adduser', formData, {'headers': header}).then(response => {
             console.log(response.data)
             if (response.data.result) {
               this.$message({
                 message: '注册成功',
                 type: 'success'
               })
+              this.dialogRegisterVisible = false
             } else {
               this.$message.error(response.data.errorInfo)
             }
           })
         } else {
-          this.$message({
-            message: '输入不合法，请检查您的输入',
-            type: 'warning'
-          })
-          return false
+          if (this.ruleForm.validCode !== this.ruleForm.code) {
+            this.$message({
+              message: '验证码错误',
+              type: 'warning'
+            })
+          } else {
+            this.$message({
+              message: '输入不合法，请检查您的输入',
+              type: 'warning'
+            })
+          }
         }
       })
     },
@@ -196,9 +231,33 @@ export default {
     register () {
       console.log('tt')
       this.dialogRegisterVisible = true
+    },
+    sendCode () {
+      let code = ''
+      for (let i = 0; i < 6; i++) {
+        code += Math.floor(Math.random() * 10)
+      }
+      this.ruleForm.validCode = code
+      let formData = new FormData()
+      formData.append('code', code)
+      formData.append('email', this.ruleForm.email)
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/sendemail', formData, {'headers': header}).then(response => {
+        console.log(response.data)
+        if (response.data.result) {
+          this.$message({
+            message: '发送成功',
+            type: 'success'
+          })
+        } else {
+          this.$message.error(response.data.errorInfo)
+        }
+      })
     }
   }
 }
+
 </script>
 
 <style scoped>

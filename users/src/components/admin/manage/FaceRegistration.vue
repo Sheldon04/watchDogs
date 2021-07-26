@@ -10,11 +10,11 @@
           <my-sidenav-admin></my-sidenav-admin>
         </el-aside>
         <el-main class="main">
-          <el-form ref="form" :model="form" label-width="130px" class="form">
+          <el-form ref="form" :model="form" status-icon :rules="rules" label-width="130px" class="demo-form">
             <el-form-item label="注册人姓名">
               <el-input v-model="form.username"></el-input>
             </el-form-item>
-            <el-form-item label="手机">
+            <el-form-item label="手机" prop="phone">
               <el-input v-model="form.phone"></el-input>
             </el-form-item>
             <el-form-item label="权限">
@@ -77,6 +77,17 @@ export default {
     }
   },
   data () {
+    let validatePhone = (rule, value, callback) => {
+      let reg = 11 && /^((13|14|15|17|18)[0-9]{1}\d{8})$/
+      if (value === '') {
+        callback(new Error('请输入手机号码'))
+      } else {
+        if (!reg.test(this.form.phone)) {
+          callback(new Error('请输入正确的手机号码!'))
+        }
+        callback()
+      }
+    }
     return {
       hasFace: false,
       uploadURL: this.localAPI + 'admin/uploadface',
@@ -90,6 +101,11 @@ export default {
         timespan: ['00:00:00', '23:59:59'],
         level: '',
         file: ''
+      },
+      rules: {
+        phone: [
+          { validator: validatePhone, trigger: 'blur' }
+        ]
       }
     }
   },
@@ -175,18 +191,10 @@ export default {
 </script>
 
 <style scoped>
-.submenu-title {
-  font-size: 18px !important;
-}
-.form {
+.demo-form {
   top: 15%;
   left: 30%;
   position: absolute;
-}
-
-.admin-menu {
-  left: 50px;
-  top: 5px;
 }
 
 </style>
