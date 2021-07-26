@@ -84,6 +84,13 @@ import axios from 'axios'
 export default {
   // 单页面中不支持前面的data:{}方式
   data () {
+    let validateName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入用户名'))
+      } else {
+        callback()
+      }
+    }
     let validatePass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
@@ -142,6 +149,9 @@ export default {
         validCode: ''
       },
       rules: {
+        username: [
+          {validator: validateName, trigger: 'blur'}
+        ],
         pass: [
           {validator: validatePass, trigger: 'blur'}
         ],
@@ -206,6 +216,7 @@ export default {
                 type: 'success'
               })
               this.dialogRegisterVisible = false
+              this.ruleForm = ''
             } else {
               this.$message.error(response.data.errorInfo)
             }
