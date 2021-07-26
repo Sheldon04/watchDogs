@@ -1,0 +1,66 @@
+.table {
+  border: 0px solid darkgray;
+ }
+ .tr {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  height: 3rem;
+  align-items: center;
+ }
+ .td {
+  width:40%;
+  justify-content: center;
+  text-align: center;
+ }
+ .bg-w{
+  background: snow;
+ }
+ .bg-g{
+  background: #E6F3F9;
+ }
+ .th {
+  display: flex;
+  flex-direction: column;
+  width: 200rpx;
+  height: 90rpx;
+  background: rgba(241, 252, 255, 1);
+  border-right: 1rpx solid rgba(218, 217, 217, 1); 
+  border-bottom: 1rpx solid rgba(218, 217, 217, 1); 
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+ }
+ .scrollClass {
+  display: flex;
+  width: 100%;
+  white-space: nowrap;
+  margin-top: 23px;
+  /* height: 100%; */
+  background-color: rgb(255, 255, 255);
+}
+.button-sp-area{
+  margin-top: 10px;
+  margin-left:auto;
+  margin-right:auto;
+  width: 30%;
+  align-items: center;
+}
+.mini-btn{
+  margin-right: 10rpx;
+  margin-bottom: 10px;
+}
+.loginBtn { 
+  width: 35%; 
+  margin-top: 10px; 
+  margin-bottom: 10px; 
+  margin-left:50px;
+  float:left;
+ }
+ .registerBtn { 
+  width: 35%; 
+  margin-top: 10px; 
+  margin-bottom: 10px; 
+  margin-right:50px;
+  float:right;
+ }

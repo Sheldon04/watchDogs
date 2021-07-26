@@ -1,0 +1,1 @@
+"E:\微信web开发者工具\cli.bat" cloud functions deploy --e cloud1-4glvb4tta48f9654 --n quickstartFunctions --r --project "D:\watch_dogs_first" --report

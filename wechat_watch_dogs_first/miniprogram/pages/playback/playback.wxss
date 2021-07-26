@@ -1,0 +1,10 @@
+.button-sp-area{
+  margin: 0 auto;
+  width: 60%;
+  margin-bottom: 10rpx;
+}
+
+.time_button{
+  margin-top: 15px;
+  margin-bottom: 15px;
+}

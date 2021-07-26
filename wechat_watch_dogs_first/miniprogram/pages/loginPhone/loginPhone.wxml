@@ -1,0 +1,38 @@
+<view class="page" data-weui-theme="{{theme}}">
+
+<view class="weui-cells__title">手机登录</view>
+<view class="weui-cells weui-cells_after-title">
+    <view class="weui-cell weui-cell_vcode">
+        <view class="weui-cell__hd">
+            <view class="weui-label">手机号</view>
+        </view>
+        <view class="weui-cell__bd">
+            <input class="weui-input" placeholder-class="weui-input__placeholder" placeholder="请输入手机号" />
+        </view>
+        <view class="weui-cell__ft">
+            <view class="weui-vcode-btn">获取验证码</view>
+        </view>
+    </view>
+    <view class="weui-cell weui-cell_active">
+        <view class="weui-cell__hd">
+            <view class="weui-label">qq</view>
+        </view>
+        <view class="weui-cell__bd">
+            <input class="weui-input" placeholder-class="weui-input__placeholder"  placeholder="请输入验证码"/>
+        </view>
+    </view>
+</view>
+
+
+
+<label class="weui-agree">
+    <checkbox class="weui-agree__checkbox-check" />
+
+    <span class="weui-agree__checkbox"></span>
+    <span class="weui-agree__text">阅读并同意<navigator url="" class="weui-agree__link">《相关条款》</navigator></span>
+</label>
+
+<view class="weui-btn-area">
+    <button class="weui-btn weui-btn_disabled" type="primary" bindtap="showTopTips">确定</button>
+</view>
+</view>
