@@ -2,8 +2,8 @@
  <div>
    <div>
      <el-container>
-       <el-header>
-         <img :src="imgSrc" width="100%" height="100%" alt="" />
+       <el-header class="header">
+         <banner></banner>
        </el-header>
        <el-aside width="200px">
          <my-dropdown></my-dropdown>
@@ -20,9 +20,10 @@
 <script>
 import MyDropdown from '../../public/Dropdown'
 import MySidenavAdmin from '../../public/SideNavAdmin'
+import Banner from '../../public/Banner'
 export default {
   name: 'MonitorAdmin',
-  components: {MySidenavAdmin, MyDropdown},
+  components: {Banner, MySidenavAdmin, MyDropdown},
   data () {
     return {
       imgSrc: require('../../../assets/img3.jpg')
@@ -34,13 +35,17 @@ export default {
 </script>
 
 <style scoped>
+.header {
+  background-color: #A2BCC6FF;
+  height: 100px !important;
+}
 .submenu-title {
   font-size: 18px !important;
 }
 
 .main {
   left: 200px;
-  top: 80px;
+  top: 100px;
   position: absolute;
 }
 

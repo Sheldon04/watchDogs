@@ -2,8 +2,8 @@
   <div>
     <div>
       <el-container>
-        <el-header>
-          <img :src="imgSrc" width="100%" height="100%" alt="" />
+        <el-header class="header">
+          <banner></banner>
         </el-header>
         <el-aside>
           <my-dropdown></my-dropdown>
@@ -43,9 +43,10 @@
 <script>
 import MyDropdown from '../public/Dropdown'
 import MySidnavUser from '../public/SideNavUser'
+import Banner from '../public/Banner'
 export default {
   name: 'AttackInfoUser',
-  components: {MySidnavUser, MyDropdown},
+  components: {Banner, MySidnavUser, MyDropdown},
   mounted () {
     this.initChart1()
     this.initChart2()
@@ -264,14 +265,13 @@ export default {
 </script>
 
 <style scoped>
+.header {
+  background-color: #A2BCC6FF;
+  height: 100px !important;
+}
 .el-menu {
   width: 200px;
   height: 800px;
-}
-
-.user-menu {
-  left: 50px;
-  top: 5px;
 }
 
 .main {

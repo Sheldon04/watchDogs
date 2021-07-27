@@ -2,8 +2,8 @@
   <div>
     <div>
       <el-container>
-        <el-header>
-          <img :src="imgSrc" width="100%" height="100%" alt="" />
+        <el-header class="header">
+          <banner></banner>
         </el-header>
         <el-aside width="200px">
           <my-dropdown></my-dropdown>
@@ -132,7 +132,7 @@
 <style scoped>
 .main {
   left: 200px;
-  top: 80px;
+  top: 100px;
   position: absolute;
 }
 
@@ -143,6 +143,11 @@
 </style>
 
 <style>
+.header {
+  background-color: #A2BCC6FF;
+  height: 100px !important;
+}
+
 .el-table .warning-row {
   background: #fbede5;
 }
@@ -156,9 +161,10 @@
 import axios from 'axios'
 import MyDropdown from '../../public/Dropdown'
 import MySidenavAdmin from '../../public/SideNavAdmin'
+import Banner from '../../public/Banner'
 export default {
   name: 'AttackListAdmin',
-  components: {MySidenavAdmin, MyDropdown},
+  components: {Banner, MySidenavAdmin, MyDropdown},
   mounted () {
     const auth = 'Token ' + localStorage.getItem('token')
     const header = {'Authorization': auth}

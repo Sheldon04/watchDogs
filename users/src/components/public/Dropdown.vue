@@ -146,6 +146,6 @@ export default {
 <style scoped>
 .user-menu {
   left: 50px;
-  top: 5px;
+  top: -5px;
 }
 </style>

@@ -2,8 +2,8 @@
   <div>
     <div>
       <el-container>
-        <el-header>
-          <img :src="imgSrc" width="100%" height="100%" alt="" />
+        <el-header class="header">
+          <banner></banner>
         </el-header>
         <el-aside width="200px">
           <my-dropdown></my-dropdown>
@@ -58,10 +58,11 @@
 import axios from 'axios'
 import MyDropdown from '../../public/Dropdown'
 import MySidenavAdmin from '../../public/SideNavAdmin'
+import Banner from '../../public/Banner'
 
 export default {
   name: 'Monitor',
-  components: {MySidenavAdmin, MyDropdown},
+  components: {Banner, MySidenavAdmin, MyDropdown},
   data () {
     return {
       loading: true,
@@ -169,6 +170,10 @@ export default {
 </script>
 
 <style scoped>
+.header {
+  background-color: #A2BCC6FF;
+  height: 100px !important;
+}
 .el-menu {
   width: 200px;
   height: 800px;
@@ -179,7 +184,7 @@ export default {
 
 .main {
   left: 200px;
-  top: 80px;
+  top: 100px;
   position: absolute;
 }
 

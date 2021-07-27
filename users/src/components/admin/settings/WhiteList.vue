@@ -2,8 +2,8 @@
   <div>
     <div>
       <el-container>
-        <el-header>
-          <img :src="imgSrc" width="100%" height="100%" alt="" />
+        <el-header class="header">
+          <banner></banner>
         </el-header>
         <el-aside width="200px">
           <my-dropdown></my-dropdown>
@@ -197,10 +197,11 @@
 import axios from 'axios'
 import MyDropdown from '../../public/Dropdown'
 import MySidenavAdmin from '../../public/SideNavAdmin'
+import Banner from '../../public/Banner'
 
 export default {
   name: 'WhiteList',
-  components: {MySidenavAdmin, MyDropdown},
+  components: {Banner, MySidenavAdmin, MyDropdown},
   computed: {
     headers () {
       return {
@@ -415,13 +416,18 @@ export default {
 </script>
 
 <style scoped>
+.header {
+  background-color: #A2BCC6FF;
+  height: 100px !important;
+}
+
 .submenu-title {
   font-size: 18px !important;
 }
 
 .main {
   left: 200px;
-  top: 80px;
+  top: 100px;
   position: absolute;
 }
 

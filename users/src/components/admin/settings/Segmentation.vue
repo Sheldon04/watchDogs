@@ -2,8 +2,8 @@
   <div>
     <div>
       <el-container>
-        <el-header>
-          <img :src="imgSrc" width="100%" height="100%" alt="" />
+        <el-header class="header">
+          <banner></banner>
         </el-header>
         <el-aside width="200px">
           <my-dropdown></my-dropdown>
@@ -34,6 +34,7 @@
 import MyDropdown from '../../public/Dropdown'
 import MySidenavAdmin from '../../public/SideNavAdmin'
 import axios from 'axios'
+import Banner from '../../public/Banner'
 export default {
   name: 'Segmentation',
   mounted () {
@@ -56,7 +57,7 @@ export default {
       duration: 0
     })
   },
-  components: {MySidenavAdmin, MyDropdown},
+  components: {Banner, MySidenavAdmin, MyDropdown},
   data () {
     return {
       uploadURL: this.localAPI + 'admin/segmentation',
@@ -112,9 +113,13 @@ export default {
 </script>
 
 <style scoped>
+.header {
+  background-color: #A2BCC6FF;
+  height: 100px !important;
+}
 .main {
   left: 200px;
-  top: 80px;
+  top: 100px;
   position: absolute;
 }
 
