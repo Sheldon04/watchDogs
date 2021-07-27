@@ -10,6 +10,18 @@
           <my-sidenav-admin></my-sidenav-admin>
         </el-aside>
         <el-main class="main">
+          <el-tooltip class="item" effect="dark" content="数字越大表示该区域警戒等级越高" placement="top-end">
+            <el-button>   区域警戒等级  </el-button>
+          </el-tooltip>
+          <el-select v-model="level" placeholder="警戒等级">
+            <el-option label="高(3)" value="3"></el-option>
+            <el-option label="中(2)" value="2"></el-option>
+            <el-option label="低(1)" value="1"></el-option>
+          </el-select>
+          <el-button @click="addArea" type="primary" plain :disabled="isDisabled">添加一个区域</el-button>
+          <el-button type="success" @click="submit">提交修改</el-button>
+          <br>
+          <br>
           <canvas id="canvas" width="1280" height="720"></canvas>
           <img class="cam1" width="1280" height="720" id="cam1" :src="camSrc1">
         </el-main>
@@ -21,11 +33,12 @@
 <script>
 import MyDropdown from '../../public/Dropdown'
 import MySidenavAdmin from '../../public/SideNavAdmin'
+import axios from 'axios'
 export default {
   name: 'Segmentation',
   mounted () {
     // eslint-disable-next-line no-unused-vars,no-undef
-    let canvas = new fabric.Canvas('canvas')
+    this.canvas = new fabric.Canvas('canvas')
     let imgElement = document.getElementById('cam1')
     // eslint-disable-next-line no-undef
     let imgInstance = new fabric.Image(imgElement, {
@@ -35,17 +48,65 @@ export default {
       opacity: 0.85
     })
     imgInstance.set('selectable', false)
-    canvas.add(imgInstance)
+    this.canvas.add(imgInstance)
+
+    this.$notify({
+      title: '提示',
+      message: '单击画布开始划分区域',
+      duration: 0
+    })
   },
   components: {MySidenavAdmin, MyDropdown},
   data () {
     return {
+      uploadURL: this.localAPI + 'admin/segmentation',
+      canvas: '',
+      rect: '',
       context: {},
+      level: 3,
       imgSrc: require('../../../assets/img3.jpg'),
-      camSrc1: require('../../../assets/camera1.jpg')
+      camSrc1: require('../../../assets/camera1.jpg'),
+      isDisabled: false
     }
   },
   methods: {
+    addArea () {
+      // eslint-disable-next-line no-unused-vars,no-undef
+      this.rect = new fabric.Rect({
+        top: 50, // 距离画布上边的距离
+        left: 100, // 距离画布左侧的距离，单位是像素
+        width: 100, // 矩形的宽度
+        height: 70, // 矩形的高度
+        fill: 'transparent', // 填充的颜色
+        stroke: 'orange', // 边框原色
+        strokeWidth: 1, // 边框大小
+        rx: 8, // 圆角半径
+        ry: 4 // 圆角半径
+      })
+      this.canvas.add(this.rect)
+      this.isDisabled = true
+      this.$notify({
+        title: '提示',
+        message: '添加下一个区域之前，请提交修改',
+        duration: 0
+      })
+    },
+    submit () {
+      let formData = new FormData()
+      formData.append('top', this.rect.top)
+      formData.append('left', this.rect.left)
+      formData.append('width', this.rect.width)
+      formData.append('height', this.rect.height)
+      axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
+        this.$message.success('添加成功')
+        this.licenseImageUrl = this.localMedia + res.data
+        this.hasFace = true
+        console.log(this.licenseImageUrl)
+        // eslint-disable-next-line handle-callback-err
+      }).catch(err => {
+        this.$message.error('添加失败')
+      })
+    }
   }
 }
 </script>
