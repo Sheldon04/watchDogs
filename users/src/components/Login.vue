@@ -64,8 +64,9 @@
           <el-input type="password" v-model="ruleForm.checkPass"></el-input>
         </el-form-item>
         <el-form-item label="电子邮箱" prop="email">
-          <el-input type="text" v-model="ruleForm.email" suffix-icon="el-icon-message" style="width: 350px"></el-input>
-          <el-button @click="sendCode">验证码</el-button>
+          <el-input type="text" v-model="ruleForm.email" suffix-icon="el-icon-message" style="width: 300px"></el-input>
+          <el-button v-show="sendAuthCode" @click="sendCode">获取验证码</el-button>
+          <span v-show="!sendAuthCode" class="auth_text"> <span class="auth_text_blue">{{auth_time}} </span> 秒之重新发送验证码</span>
         </el-form-item>
         <el-form-item label="验证码" prop="code">
           <el-input type="text" v-model="ruleForm.code" style="width: 100px"></el-input>
@@ -110,16 +111,13 @@ export default {
         callback()
       }
     }
-    // let validateEmail = (rule, value, callback) => {
-    //   let regEmail = /^[A-Za-zd]+([-_.][A-Za-zd]+)*@([A-Za-zd]+[-.])+[A-Za-zd]{2,5}$/
-    //   if (value === '') {
-    //     callback(new Error('邮箱不能为空'))
-    //   } else if (!regEmail.test(value)) {
-    //     callback(new Error('邮箱格式不正确!'))
-    //   } else {
-    //     callback()
-    //   }
-    // }
+    let validateEmail = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('邮箱不能为空'))
+      } else {
+        callback()
+      }
+    }
     let validateCode = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('验证码不能为空'))
@@ -130,6 +128,8 @@ export default {
     const rolesOptions = ['用户', '管理员']
     // 相当于以前的function data(){},这是es5之前的写法，新版本可以省略掉function
     return {
+      sendAuthCode: true,
+      auth_time: 0,
       dialogRegisterVisible: false,
       user: {
         is_superuser: 0, // or 'admin'
@@ -159,6 +159,7 @@ export default {
           {validator: validatePass2, trigger: 'blur'}
         ],
         email: [
+          {validator: validateEmail, trigger: 'blur'}
         ],
         code: [
           {validator: validateCode, trigger: 'blur'}
@@ -244,6 +245,7 @@ export default {
       this.dialogRegisterVisible = true
     },
     sendCode () {
+      this.auth_time = 6
       let code = ''
       for (let i = 0; i < 6; i++) {
         code += Math.floor(Math.random() * 10)
@@ -256,13 +258,26 @@ export default {
       const header = {'Authorization': auth}
       axios.post('http://127.0.0.1:8000/api/sendemail', formData, {'headers': header}).then(response => {
         console.log(response.data)
-        if (response.data.result) {
+        if (response.data.result && this.ruleForm.email !== '') {
           this.$message({
             message: '发送成功',
             type: 'success'
           })
+          this.sendAuthCode = false
+          // eslint-disable-next-line camelcase
+          let auth_timetimer = setInterval(() => {
+            this.auth_time--
+            if (this.auth_time <= 0) {
+              this.sendAuthCode = true
+              clearInterval(auth_timetimer)
+            }
+          }, 1000)
         } else {
+          if (this.ruleForm.email === '') {
+            response.data.errorInfo = '不能发送空邮箱'
+          }
           this.$message.error(response.data.errorInfo)
+          this.sendAuthCode = true
         }
       })
     }

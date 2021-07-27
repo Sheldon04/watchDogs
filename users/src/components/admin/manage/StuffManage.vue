@@ -12,7 +12,7 @@
         <el-main class="main">
           <el-table
             v-loading="loading"
-            :data="tableData.filter(data => !search || data.username.toLowerCase().includes(search.toLowerCase()))"
+            :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize).filter(data => !search || data.username.toLowerCase().includes(search.toLowerCase()))"
             stripe
             style="width: 1200px"
             :default-sort = "{prop: 'id', order: 'descending'}">

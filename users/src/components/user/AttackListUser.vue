@@ -44,17 +44,27 @@
           <br>
           <el-table
             v-loading="loading"
-            :data="tableData"
-            style="width: 1000px"
+            :data="tableData.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+            style="width: 1200px"
             :row-class-name="tableRowClassName">
             <el-table-column
               prop="date"
+              label="日期"
+              width="200"
+              align="center">
+              <template slot-scope="scope">
+                <el-icon name="date"></el-icon>
+                <span style="margin-left: 10px">{{ scope.row.date }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="time"
               label="时间"
               width="200"
               align="center">
               <template slot-scope="scope">
                 <el-icon name="time"></el-icon>
-                <span style="margin-left: 10px">{{ scope.row.date }}</span>
+                <span style="margin-left: 10px">{{ scope.row.time }}</span>
               </template>
             </el-table-column>
             <el-table-column
@@ -100,6 +110,21 @@
           </el-pagination>
         </el-main>
       </el-container>
+      <el-dialog
+        @close="detailClose"
+        title="入侵详情"
+        :visible.sync="detailVisible"
+        width="50%"
+        center>
+        <el-carousel :interval="5000" arrow="always">
+          <el-carousel-item v-for="img in imgs" :key="img">
+            <el-image
+              style="width: 300px; height: 300px"
+              :src="img"
+              :fit="fit"></el-image>
+          </el-carousel-item>
+        </el-carousel>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -178,9 +203,11 @@ export default {
       this.currentPage = val
     },
     handleClick (row) {
-      console.log(this.timespan)
-      console.log(this.date)
-      console.log(row.className)
+      this.detailVisible = true
+    },
+    detailClose () {
+      this.detailVisible = false
+      this.imgs = []
     }
   },
   data () {
@@ -194,6 +221,8 @@ export default {
       date: '2021-7-21',
       timespan: ['00:00:00', '23:59:59'],
       tableData: [],
+      detailVisible: false,
+      imgs: ['http://127.0.0.1:8000/media/photos/20210724112211_77.jpg', 'http://127.0.0.1:8000/media/photos/20210724112211_77.jpg', 'http://127.0.0.1:8000/media/photos/20210724112211_77.jpg'],
       pickerOptions: {
         disabledDate (time) {
           return time.getTime() > Date.now()

@@ -174,8 +174,8 @@ export default {
             center: ['50%', '50%'],
             data: [
               {value: 400, name: '普通报警'},
-              {value: 300, name: '中等报警'},
-              {value: 100, name: '严重报警'}
+              {value: 350, name: '中等报警'},
+              {value: 200, name: '严重报警'}
             ].sort(function (a, b) { return a.value - b.value }),
             roseType: 'radius',
             label: {
