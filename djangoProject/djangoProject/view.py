@@ -6,6 +6,7 @@ import os
 import random
 import time
 
+import arrow
 import cv2
 from django.contrib import auth
 from django.core import serializers
@@ -29,7 +30,7 @@ from monitor.my_thread import Invasion_Record_Saver
 import torch
 import face_recognition
 
-_model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+#_model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
 
 photos = list(mypicture.objects.values("photo"))
 
@@ -145,7 +146,7 @@ def user_update(request):
 
 def gen(d):
     while True:
-        for frame, is_invade, num, _date, _time in d.run2():
+        for frame, is_invade, num, _date, _time in d.run():
             time.sleep(.001)
             cv2.imwrite('./1.jpg', frame)
             flag, buffer = cv2.imencode('.jpg', frame)
@@ -160,7 +161,7 @@ def gen(d):
 @permission_classes((AllowAny,))
 @authentication_classes(())
 def send_video(request):
-    d = Detector(1, model=_model, known_face_encodings=known_face_encodings)
+    d = Detector(1)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
@@ -433,6 +434,7 @@ def whitelist_delete(request):
         old = mypicture.objects.filter(phone=phone_number).first()
         del_path = './media/' + old.photo.name
         os.remove(del_path)
+        old.delete()
     except:
         print('delete failed')
     if(whitelist.filter(phone_number=phone_number).delete()):

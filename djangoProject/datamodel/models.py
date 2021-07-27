@@ -24,3 +24,9 @@ class WhiteList(models.Model):
     phone_number = models.CharField(max_length=20)
     time_start =models.TimeField()
     time_end = models.TimeField()
+
+class segmentation(models.Model):
+    left = models.CharField(max_length=20)
+    top = models.CharField(max_length=20)
+    width = models.CharField(max_length=20)
+    height = models.CharField(max_length=20)
