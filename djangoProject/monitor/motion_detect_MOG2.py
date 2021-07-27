@@ -3,12 +3,16 @@ import base64
 import cv2
 import time
 from datetime import datetime
+import os
+import torch
 
 # 使用MOG2模型进行移动物体标注更稳定，但是易出现噪点（如当场景中大量移动物体移出场景时）
 # 使用固定背景进行背景减除在上述场景下不会出现噪点，但是需要定期更新背景图
+from monitor.my_thread import Email_Sender
+
 
 class Detector:
-    def __init__(self, choice):
+    def __init__(self, choice, model=None, known_face_encodings=None):
         self.conf = {'save_path': './video/', 'min_motion_frames': 10, 'enable_save_img': True}
         self.video_writer = None
         # 使用ip摄像头
@@ -19,7 +23,8 @@ class Detector:
             self.camera.set(6, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
         # 使用本地视频文件（测试用）
         elif choice == 1:
-            file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
+            # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\road.kux'
+            file_path = 'C:\\Users\\ASUS\\Desktop\\face_recognition\\unknown\\hall2_mid.mp4'
             # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
             self.camera = cv2.VideoCapture(file_path)
         # 使用rtmp转发服务器读取视频流
@@ -29,9 +34,13 @@ class Detector:
             self.camera = cv2.VideoCapture(file_path)
 
         # 场景的静态背景，用于计算差分图（run1()）
-        self.bg = cv2.imread('../monitor/data/back.jpg')
-        self.bg = cv2.cvtColor(self.bg, cv2.COLOR_BGR2GRAY)  # 转灰度图
-        self.bg = cv2.GaussianBlur(self.bg, (21, 21), 0)
+        # self.bg = cv2.imread('./monitor/data/back.jpg')
+        # self.bg = cv2.cvtColor(self.bg, cv2.COLOR_BGR2GRAY)  # 转灰度图
+        # self.bg = cv2.GaussianBlur(self.bg, (21, 21), 0)
+        # Model
+        # self.yolo = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # or yolov5m, yolov5l, yolov5x, custom
+        self.yolo = model  # or yolov5m, yolov5l, yolov5x, custom
+        self.known_face_encodings = known_face_encodings
 
         # 判断视频是否打开
         if self.camera.isOpened():
@@ -50,18 +59,24 @@ class Detector:
         return fgmask
 
     # 停止记录入侵视频
-    def stop_video(self):
+    def stop_video(self, _date, _time, num):
         if not self.video_writer is None:
             self.video_writer.release()
             self.video_writer = None
+            t = Email_Sender(self.known_face_encodings, _date, _time, num)
+            t.start()
+            print('stop')
+
 
     # 开始记录入侵视频
     def start_video(self, size, time):
         if self.video_writer == None:
             print('start')
-            self.video_writer = cv2.VideoWriter(self.conf['save_path']
+            os.mkdir('./monitor/video/' + time)
+            self.video_writer = cv2.VideoWriter('./monitor/video/'
                                                 + time + '.avi',
                                                 cv2.VideoWriter_fourcc(*'XVID'), 20.0, size, True)
+
 
     # 使用MOG2模型进行背景减除
     def run(self):
@@ -72,44 +87,40 @@ class Detector:
         # print('size:' + repr(size))
 
         fps = 30  # 帧率
-        self.fgbg = cv2.createBackgroundSubtractorMOG2()
+        # self.fgbg = cv2.createBackgroundSubtractorMOG2()
         # self.fgbg = cv2.bgsegm.createBackgroundSubtractorGMG()
-        self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        self.fgbg = cv2.createBackgroundSubtractorKNN(detectShadows=True)
+        self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 
         motion_body_cnt = 0     # 一帧中的移动物体
         motion_frame_cnt = 0    # 出现移动物体的帧数，当帧数大于一定值后，认为有入侵发生
         pre_motion_num = 0      # 暂时没用
         is_first_invade = True  # 一次入侵中，是否第一次被记录，用于判断入侵开始时间
         is_invade = False       # 是否有入侵
+        invasion_date = None
+        invasion_time = None
         while True:
             start = time.time()
             grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
             motion_body_cnt = 0
             if not grabbed:
                 break
-            end = time.time()
+
             invade_time = None
             return_flag = False
 
-            # 运动检测部分
-            seconds = end - start
-            if seconds < 1.0 / fps:
-                time.sleep(1.0 / fps - seconds)
-
             # 背景减除后的图像
             fgmask = cv2.resize(self.get_fgmask(frame_lwpCV), size)
-
+            fgmask = cv2.erode(fgmask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)), iterations=2)
+            fgmask = cv2.dilate(fgmask, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 3)), iterations=2)
+            thresh = cv2.threshold(fgmask, 244, 255, cv2.THRESH_BINARY)[1]
             # 查找图像中的高亮区域的轮廓
-            contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if len(contours) - pre_motion_num > 20:
-                # TODO 按照物体移动速度
-                pass
+            contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             is_motion = False
             for c in contours:
                 # 删除过小或过大的区域
-                if cv2.contourArea(c) < 500 or cv2.contourArea(c) > 50000:
+                if cv2.contourArea(c) < 1500 or cv2.contourArea(c) > 90000:
                     continue
-
                 # 入侵发生
                 motion_body_cnt += 1
                 is_motion = True
@@ -122,9 +133,11 @@ class Detector:
                 # 开始记录入侵视频
                 if motion_frame_cnt > self.conf['min_motion_frames'] and self.conf['enable_save_img'] and is_first_invade:
                     is_invade = True
-                    invade_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-                    self.start_video(size, invade_time)
-                    self.video_writer.write(frame_lwpCV)
+                    now = datetime.now()
+                    self.filename = now.strftime("%Y-%m-%d-%H-%M-%S")
+                    invasion_date = now.strftime("%Y-%m-%d")
+                    invasion_time = now.strftime("%H:%M:%S")
+                    self.start_video(size, self.filename)
                     # # TODO 测试后删除
                     # if motion_body_cnt > 500:
                     #     self.conf['enable_save_img'] = False
@@ -134,7 +147,7 @@ class Detector:
             # 没有移动物体时停止录制视频
             if not is_motion:
                 # print('invade stop')
-                self.stop_video()
+                self.stop_video(None, None, None)
                 is_first_invade = True
                 is_invade = False
                 motion_frame_cnt = 0
@@ -145,10 +158,20 @@ class Detector:
                     is_first_invade = False
                     return_flag = True
 
-            # 返回移动物体标注后的图像，移动物体数，是否为首次入侵，入侵时间
-            yield frame_lwpCV, motion_body_cnt, return_flag, invade_time
+            if self.video_writer != None:
+                self.video_writer.write(frame_lwpCV)
+                # if motion_frame_cnt % 90 == 0:
+                #     print('save')
+                #     path = './video/' + self.filename + '/' + str(motion_frame_cnt / 90) + '.jpg'
+                #     print(path)
+                #     cv2.imwrite(path, frame_lwpCV)
 
-            if cv2.waitKey(25) & 0xFF == ord('q'):
+            # 返回移动物体标注后的图像，移动物体数，是否为首次入侵，入侵时间
+            yield frame_lwpCV, False, motion_body_cnt, invasion_date, invasion_time
+            cv2.imshow('thresh', thresh)
+            cv2.imshow('mask', fgmask)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.camera.release()
                 cv2.destroyAllWindows()
                 break
@@ -239,9 +262,86 @@ class Detector:
             pre_motion_num = motion_body_cnt
             # pre_frame = gray_lwpCV
 
-            if cv2.waitKey(25) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.camera.release()
                 cv2.destroyAllWindows()
+                break
+        # When everything done, release the capture
+        self.camera.release()
+        cv2.destroyAllWindows()
+
+    def run2(self):
+        # 测试用,查看视频size
+        size = (1280, 720)
+
+        person_cnt = 0  # 一帧中的移动物体
+        is_first_invade = True  # 一次入侵中，是否第一次被记录，用于判断入侵开始时间
+        is_invade = False  # 是否有入侵
+        invade_frame_cnt = 0
+        invasion_date = None
+        invasion_time = None
+        while True:
+            return_flag = False
+
+            grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
+            frame_lwpCV = cv2.resize(frame_lwpCV, size)
+
+            # yolov5
+            video = frame_lwpCV.copy()
+            # video = frame_lwpCV[:, :, ::-1]
+            # Inference
+            results = self.yolo(video)
+
+            if invade_frame_cnt > self.conf['min_motion_frames'] and self.conf['enable_save_img'] and is_first_invade:
+                is_invade = True
+                now = datetime.now()
+                self.filename = now.strftime("%Y-%m-%d-%H-%M-%S")
+                invasion_date = now.strftime("%Y-%m-%d")
+                invasion_time = now.strftime("%H:%M:%S")
+                self.start_video(size, self.filename)
+            # if 'person' in results.pandas().xyxy[0]:
+            #     print('True')
+            # 有入侵
+            if 0 in list(results.pandas().xyxy[0]['class']):
+                invade_frame_cnt += 1
+                if invade_frame_cnt > 500:
+                    # self.conf['enable_save_img'] = False
+                    # self.video_writer.release()
+                    self.stop_video(invasion_date, invasion_time, person_cnt)
+                    is_first_invade = True
+                    is_invade = False
+                    invade_frame_cnt = 0
+                    print('forced stop')
+                    # self.conf['enable_save_img'] = False
+                if is_invade and is_first_invade:
+                    print('invade start')
+                    is_first_invade = False
+                    return_flag = True
+                    person_cnt = list(results.pandas().xyxy[0]['class']).count(0)
+            else:
+                # 没有移动物体时停止录制视频
+                # print('invade stop')
+                self.stop_video(invasion_date, invasion_time, person_cnt)
+                is_first_invade = True
+                is_invade = False
+                invade_frame_cnt = 0
+
+            results.render()  # updates results.imgs with boxes and labels
+
+            if self.video_writer != None:
+                self.video_writer.write(results.imgs[0])
+                if invade_frame_cnt % 90 == 0:
+                    print('save')
+                    path = './monitor/video/' + self.filename + '/' + str(int(invade_frame_cnt / 90)) + '.jpg'
+                    print(path)
+                    cv2.imwrite(path, frame_lwpCV)
+
+            # cv2.imshow('yolo', results.imgs[0])
+
+            # 返回移动物体标注后的图像，移动物体数，是否为首次入侵，入侵时间
+            yield results.imgs[0], return_flag, person_cnt, invasion_date, invasion_time
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         # When everything done, release the capture
         self.camera.release()
@@ -250,9 +350,7 @@ class Detector:
 
 if __name__ == '__main__':
     d = Detector(1)
-    for test, mask, is_invade, invade_time in d.run():
+    for test, mask, is_invade, invade_time, _ in d.run():
         cv2.imshow('test', test)
         retval, buffer = cv2.imencode('.jpg', test)
         pic_str = base64.b64encode(buffer)
-        if is_invade:
-            print(invade_time)

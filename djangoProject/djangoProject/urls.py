@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/admin/updateface', view.update_face), #更新人脸照片
     path('api/attacklistuser/all', view.get_invation_records), #所有入侵记录
     path('api/attacklistuser', view.get_specific_invation_records), #指定时间入侵记录
+    path('api/attacklistuser/detail', view.get_invasion_detail),  # 删除白名单
     path('api/invationrecord/getmonth', view.get_month_records), #指定月份入侵记录
     path('api/invationrecord/chart1', view.get_num_records_day), #入侵统计图chart1接口
     path('api/invationrecord/getvideo', view.get_video), #视频回放

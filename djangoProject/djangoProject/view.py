@@ -4,7 +4,6 @@ import datetime
 import json
 import os
 import random
-import arrow
 import time
 
 import cv2
@@ -26,6 +25,24 @@ from datamodel.models import invationRecord, WhiteList, mypicture
 from djangoProject import settings
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
+from monitor.my_thread import Invasion_Record_Saver
+import torch
+import face_recognition
+
+_model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+
+photos = list(mypicture.objects.values("photo"))
+
+print(photos)
+
+known_face_encodings = []
+
+for photo in photos:
+    img = face_recognition.load_image_file('./media/' + photo['photo'])
+    face_encoding = face_recognition.face_encodings(img)[0]
+    known_face_encodings.append(face_encoding)
+
+print('known face encode done')
 
 #日期转码
 class DateEncoder(json.JSONEncoder):
@@ -128,19 +145,22 @@ def user_update(request):
 
 def gen(d):
     while True:
-        for frame, _, _, _ in d.run():
-            time.sleep(.1)
+        for frame, is_invade, num, _date, _time in d.run2():
+            time.sleep(.001)
             cv2.imwrite('./1.jpg', frame)
             flag, buffer = cv2.imencode('.jpg', frame)
-            if not flag:
-                continue
-            print('send video')
+            if is_invade == True:
+                t = Invasion_Record_Saver(_date, _time, num)
+                t.start()
+                print('invade')
             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
 
 #处理过后视频推流
 @api_view(['GET'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
 def send_video(request):
-    d = Detector(1)
+    d = Detector(1, model=_model, known_face_encodings=known_face_encodings)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
 
 def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
@@ -513,3 +533,17 @@ def send_my_email(request):
         result = False
         error_info = '验证码发送失败'
     return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})
+
+@api_view(['POST'])
+def get_invasion_detail(request):
+    date = request.POST.get("date")
+    time = request.POST.get("time")
+    time = time.split(':')
+    datetime = date + '-' + time[0] + '-' + time[1] + '-' + time[2]
+    dirname = './monitor/video/' + datetime
+    dirname = './monitor/video/2021-07-27-10-23-08'
+    file_num = sum([os.path.isfile(dirname + '/' + listx) for listx in os.listdir(dirname)])
+    filename_list = []
+    for i in range(1, file_num + 1):
+        filename_list.append('http://127.0.0.1:8000/monitor/video/' + datetime + '/' + str(i) + '.jpg')
+    return Response(filename_list)
