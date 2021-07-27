@@ -540,10 +540,12 @@ def get_invasion_detail(request):
     time = request.POST.get("time")
     time = time.split(':')
     datetime = date + '-' + time[0] + '-' + time[1] + '-' + time[2]
-    dirname = './monitor/video/' + datetime
-    dirname = './monitor/video/2021-07-27-10-23-08'
+    dirname = './media/screen_shots/' + datetime
+    print('dirname ', dirname)
+    # dirname = './monitor/video/2021-07-27-10-23-08'
     file_num = sum([os.path.isfile(dirname + '/' + listx) for listx in os.listdir(dirname)])
     filename_list = []
-    for i in range(1, file_num + 1):
-        filename_list.append('http://127.0.0.1:8000/monitor/video/' + datetime + '/' + str(i) + '.jpg')
+    for i in range(0, file_num):
+        filename_list.append('http://127.0.0.1:8000/media/screen_shots/' + datetime + '/' + str(i) + '.jpg')
+    print(filename_list)
     return Response(filename_list)

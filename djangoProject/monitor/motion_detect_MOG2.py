@@ -63,16 +63,16 @@ class Detector:
         if not self.video_writer is None:
             self.video_writer.release()
             self.video_writer = None
-            t = Email_Sender(self.known_face_encodings, _date, _time, num)
-            t.start()
-            print('stop')
+            # t = Email_Sender(self.known_face_encodings, _date, _time, num)
+            # t.start()
+            # print('stop')
 
 
     # 开始记录入侵视频
     def start_video(self, size, time):
         if self.video_writer == None:
             print('start')
-            os.mkdir('./monitor/video/' + time)
+            os.mkdir('../media/screen_shots/' + time)
             self.video_writer = cv2.VideoWriter('./monitor/video/'
                                                 + time + '.avi',
                                                 cv2.VideoWriter_fourcc(*'XVID'), 20.0, size, True)
@@ -299,6 +299,10 @@ class Detector:
                 invasion_date = now.strftime("%Y-%m-%d")
                 invasion_time = now.strftime("%H:%M:%S")
                 self.start_video(size, self.filename)
+                print('save')
+                path = '../media/screen_shots/' + self.filename + '/0.jpg'
+                print(path)
+                cv2.imwrite(path, frame_lwpCV)
             # if 'person' in results.pandas().xyxy[0]:
             #     print('True')
             # 有入侵
@@ -332,7 +336,7 @@ class Detector:
                 self.video_writer.write(results.imgs[0])
                 if invade_frame_cnt % 90 == 0:
                     print('save')
-                    path = './monitor/video/' + self.filename + '/' + str(int(invade_frame_cnt / 90)) + '.jpg'
+                    path = '../media/screen_shots/' + self.filename + '/' + str(int(invade_frame_cnt / 90)) + '.jpg'
                     print(path)
                     cv2.imwrite(path, frame_lwpCV)
 

@@ -114,12 +114,11 @@
         @close="detailClose"
         title="入侵详情"
         :visible.sync="detailVisible"
-        width="50%"
         center>
-        <el-carousel :interval="5000" arrow="always">
+        <el-carousel style="width: 960px; height: 540px" :interval="5000" arrow="always">
           <el-carousel-item v-for="img in imgs" :key="img">
             <el-image
-              style="width: 300px; height: 300px"
+              style="width: 960px; height: 540px !important;"
               :src="img"
               :fit="fit"></el-image>
           </el-carousel-item>
@@ -134,11 +133,6 @@
   left: 200px;
   top: 80px;
   position: absolute;
-}
-
-.user-menu {
-  left: 50px;
-  top: 5px;
 }
 </style>
 
@@ -204,6 +198,17 @@ export default {
     },
     handleClick (row) {
       this.detailVisible = true
+      let date = row.date
+      let time = row.time
+      let formData = new FormData()
+      formData.append('date', date)
+      formData.append('time', time)
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/attacklistuser/detail', formData, {'headers': header}).then(response => {
+        console.log(response.data)
+        this.imgs = response.data
+      })
     },
     detailClose () {
       this.detailVisible = false
@@ -222,7 +227,7 @@ export default {
       timespan: ['00:00:00', '23:59:59'],
       tableData: [],
       detailVisible: false,
-      imgs: ['http://127.0.0.1:8000/media/photos/20210724112211_77.jpg', 'http://127.0.0.1:8000/media/photos/20210724112211_77.jpg', 'http://127.0.0.1:8000/media/photos/20210724112211_77.jpg'],
+      imgs: [],
       pickerOptions: {
         disabledDate (time) {
           return time.getTime() > Date.now()

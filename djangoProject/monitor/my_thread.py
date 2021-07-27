@@ -64,7 +64,7 @@ class Email_Sender(threading.Thread):  # 继承父类threading.Thread
         print('path ', path)
         file_num = sum([os.path.isfile(path + '/' + listx) for listx in os.listdir(path)])
         print('pic num ', file_num)
-        for i in range(1, file_num + 1):
+        for i in range(0, file_num):
             frame = cv2.imread(path + '\\' + str(i) + '.jpg')
             print('processing ' + str(i) + '.jpg')
             scale = 0.5
