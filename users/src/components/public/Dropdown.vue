@@ -3,6 +3,7 @@
     <el-dropdown class="user-menu" placement="bottom-start">
   <span class="el-dropdown-link">
     <el-avatar shape="square" :size="80" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+    <i class="el-icon-arrow-down el-icon--right"></i>
   </span>
       <el-dropdown-menu slot="dropdown">
         <el-dropdown-item split-button @click.native="personal_info">个人信息</el-dropdown-item>
