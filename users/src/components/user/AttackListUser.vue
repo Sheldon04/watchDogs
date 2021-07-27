@@ -114,13 +114,14 @@
         @close="detailClose"
         title="入侵详情"
         :visible.sync="detailVisible"
-        center>
-        <el-carousel style="width: 960px; height: 540px" :interval="5000" arrow="always">
+        center
+        class="detail-dialog">
+        <el-carousel style="width: 100%" :interval="5000" arrow="always">
           <el-carousel-item v-for="img in imgs" :key="img">
             <el-image
-              style="width: 960px; height: 540px !important;"
+              style="width: 960px; height: 540px ; max-width: 100%; max-height: 100%;"
               :src="img"
-              :fit="fit"></el-image>
+              ></el-image>
           </el-carousel-item>
         </el-carousel>
       </el-dialog>
