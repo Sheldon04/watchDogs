@@ -619,7 +619,7 @@ def task_get_all(request):
     return JsonResponse(json.loads(response_data), safe=False)
 
 @api_view(['POST'])
-def task_get_processed(request):
+def task_download_processed(request):
     detail = {}
     error_info=''
     result = True
@@ -632,5 +632,22 @@ def task_get_processed(request):
         print(e)
         result = False
         error_info = '下载失败'
+        detail['exception'] = repr(e)
+    return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})
+
+@api_view(['POST'])
+def task_get_photos(request):
+    detail = {}
+    error_info=''
+    result = True
+    id = request.POST.get('id')
+    try:
+        task = mytask.objects.filter(id=id).first()
+        urls = ['http://127.0.0.1:8000/media/' + task.processed.name, 'http://127.0.0.1:8000/media/' + task.origin.name]
+        detail['urls'] = urls
+    except Exception as e:
+        print(e)
+        result = False
+        error_info = '查找失败'
         detail['exception'] = repr(e)
     return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})

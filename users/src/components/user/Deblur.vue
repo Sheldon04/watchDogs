@@ -91,6 +91,21 @@
           </el-table>
         </el-main>
       </el-container>
+      <el-dialog
+        @close="detailClose"
+        title="工单详情"
+        :visible.sync="detailVisible"
+        center
+        class="detail-dialog">
+        <el-carousel style="width: 100%" :interval="5000" arrow="always">
+          <el-carousel-item v-for="img in imgs" :key="img">
+            <el-image
+              style="width: 960px; height: 540px ; max-width: 100%; max-height: 100%;"
+              :src="img"
+            ></el-image>
+          </el-carousel-item>
+        </el-carousel>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -125,7 +140,9 @@ export default {
       textarea: '',
       tableData: [],
       loading: true,
-      file: ''
+      file: '',
+      detailVisible: false,
+      imgs: []
     }
   },
   methods: {
@@ -214,7 +231,19 @@ export default {
         }
       })
     },
-    handleSee () {
+    handleSee (index, row) {
+      this.detailVisible = true
+      let formData = new FormData()
+      formData.append('id', row.id)
+      console.log(formData.get('id'))
+      axios.post('http://127.0.0.1:8000/api/deblur/show', formData, {'headers': this.headers}).then(res => {
+        console.log(res.data.detail.urls)
+        this.imgs = res.data.detail.urls
+      })
+    },
+    detailClose () {
+      this.detailVisible = false
+      this.imgs = []
     }
   }
 }
