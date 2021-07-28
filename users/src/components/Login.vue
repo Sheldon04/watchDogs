@@ -1,34 +1,59 @@
+/* eslint-disable */
 <template>
   <div>
+    <h1>Welcome</h1>
+    <div class="background">
+      <span>WatchDogs</span>
+    </div>
+    <div>
+      <footer id="footer" style="width: 100%">
+        <table>
+          <tr>
+            <td width="900px"></td>
+            <td rowspan="3" style="text-align: left">
+              <p>·Copyright © 2021 WatchDogs.All rights reserved.</p>
+              <p>·© 2021 WatchDogs.版权所有。</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: center"><el-button type="text" style="font-size: larger;color: white">关于我们</el-button></td>
+          </tr>
+          <tr>
+            <td style="text-align: center"><el-button type="text" style="font-size: larger;color: white">联系我们</el-button></td>
+          </tr>
+        </table>
+      </footer>
+    </div>
     <!--flex弹性盒子模型，justify-content：主抽 -->
-    <div style="display: flex;justify-content: center;margin-top: 150px" class="mycard">
-      <el-card style="width: 380px">
+    <div style="display: flex;justify-content: center;margin-top: 800px" class="mycard">
+      <el-card style="width: 400px;background-color: transparent" id="el_card">
         <div slot="header" class="clearfix">
           <span>登录</span>
         </div>
-        <table>
+        <table id="table_login">
           <tr>
-            <td>用户名</td>
+            <!--            <td>用户名</td>-->
             <td>
               <el-input v-model="user.username" placeholder="请输入用户名"></el-input>
             </td>
           </tr>
           <br>
           <tr>
-            <td>密码</td>
+            <!--            <td>密码</td>-->
             <td>
-              <el-input type="password" v-model="user.password" placeholder="请输入密码" @keydown.enter.native="submitForm"></el-input>
+              <el-input type="password" v-model="user.password" placeholder="请输入密码"
+                        @keydown.enter.native="submitForm"></el-input>
               <!-- @keydown.enter.native="doLogin"当按下enter键的时候也会执行doLogin方法-->
             </td>
           </tr>
           <br>
           <tr>
-            <td colspan="2">
+            <td colspan="2" id="choose">
               <el-checkbox-group
                 v-model="checkedRoles"
                 :min="0"
                 :max="1">
-                <el-checkbox v-for="role in roles" :label="role" :key="role">{{role}}</el-checkbox>
+                <el-checkbox v-for="role in roles" :label="role" :key="role" style="margin: 3px 40px 5px 40px;color: white">{{ role }}</el-checkbox>
               </el-checkbox-group>
             </td>
           </tr>
@@ -37,7 +62,7 @@
             <td colspan="2">
               <!-- 点击事件的两种不同的写法v-on:click和 @click-->
               <!--<el-button style="width: 300px" type="primary" v-on:click="doLogin">登录</el-button>-->
-              <el-button style="width: 300px" type="primary" @click="submitForm">登录</el-button>
+              <el-button style="width: 100%;background-color: snow;color: cornflowerblue" type="primary" @click="submitForm">登录</el-button>
             </td>
           </tr>
           <tr>
@@ -49,11 +74,11 @@
         </table>
       </el-card>
     </div>
-    <div class="background">
-      <img :src="imgSrc" width="100%" height="100%" alt="" />
-    </div>
-    <el-dialog title="注册新用户" :visible.sync="dialogRegisterVisible" width="600px">
-      <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+    <!--    <div class="background">-->
+    <!--      <img :src="imgSrc" width="100%" height="100%" alt="" />-->
+    <!--    </div>-->
+    <el-dialog title="注册新用户" :visible.sync="dialogRegisterVisible" width="600px" style="text-align: left">
+      <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm" style="border-radius: 100px">
         <el-form-item label="用户名" prop="username">
           <el-input type="text" v-model="ruleForm.username" suffix-icon="el-icon-user"></el-input>
         </el-form-item>
@@ -64,25 +89,157 @@
           <el-input type="password" v-model="ruleForm.checkPass"></el-input>
         </el-form-item>
         <el-form-item label="电子邮箱" prop="email">
-          <el-input type="text" v-model="ruleForm.email" suffix-icon="el-icon-message" style="width: 300px"></el-input>
-          <el-button v-show="sendAuthCode" @click="sendCode">获取验证码</el-button>
-          <span v-show="!sendAuthCode" class="auth_text"> <span class="auth_text_blue">{{auth_time}} </span> 秒之重新发送验证码</span>
+          <el-input type="text" v-model="ruleForm.email" suffix-icon="el-icon-message" style="width: 350px"></el-input>
+          <el-button @click="sendCode">验证码</el-button>
         </el-form-item>
         <el-form-item label="验证码" prop="code">
           <el-input type="text" v-model="ruleForm.code" style="width: 100px"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitRegisterForm('ruleForm')">提交</el-button>
-          <el-button @click="resetForm('ruleForm')">重置</el-button>
+          <el-button style="margin: 10px 80px 10px 40px" type="primary" @click="submitRegisterForm('ruleForm')">提交</el-button>
+          <el-button style="margin: 10px 80px 10px 40px" @click="resetForm('ruleForm')">重置</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
   </div>
+
 </template>
 
+<style>
+
+h1 {
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  letter-spacing: 10px;
+  color: white;
+  font-size: 12vw;
+}
+.background {
+  background-image: url('../assets/mountain.jpg');
+  background-size: cover;
+  background-position: 50% 50%;
+  height: 200vh;
+  font: 900 16rem '';
+  line-height: 130vh;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+
+}
+
+.background::before {
+  content: '';
+  background-size: cover;
+  background-image: inherit;
+  background-position: 50% 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -99;
+}
+
+.mycard {
+  left: 38%;
+  top: 10%;
+  position: absolute;
+  text-align: center;
+  z-index: 99;
+  background-color: transparent;
+
+}
+
+#table_login{
+  text-align: center;
+  width: 100%;
+  background-color: transparent;
+  height: 300px;
+}
+
+.clearfix {
+  font-size: larger;
+  font-weight: bold;
+  font: ;
+  height: 20px;
+}
+
+#choose {
+  height: 30px;
+}
+
+#el_card {
+  z-index: 2;
+  background-position: center top;
+  background-size: cover;
+  overflow: hidden;
+}
+
+#el_card:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(218, 224, 223, 0.8);
+  z-index: -1;
+  background-image:url("../assets/mountain.jpg");
+  background-position: center top;
+  background-size: cover;
+  background-attachment: scroll;
+  -webkit-filter: blur(20px);
+  -moz-filter: blur(20px);
+  -ms-filter: blur(20px);
+  -o-filter: blur(20px);
+  filter: blur(20px);
+  margin: -30px;
+}
+
+#footer {
+  color: white;
+  position: absolute;
+  top: 1400px;
+  z-index: 20;
+  background-position: center top;
+  background-size: cover;
+  overflow: hidden;
+}
+
+#footer:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(200, 200, 200, 0.8);
+  z-index: -1;
+  background-image:url("../assets/mountain.jpg");
+  background-position: center top;
+  background-size: cover;
+  background-attachment: fixed;
+  -webkit-filter: blur(20px);
+  -moz-filter: blur(20px);
+  -ms-filter: blur(20px);
+  -o-filter: blur(20px);
+  filter: blur(20px);
+}
+
+</style>
+
 <script>
+
 import axios from 'axios'
+
 export default {
+  mounted () {
+    window.addEventListener('scroll', this.handleScroll, true)
+  },
+
   // 单页面中不支持前面的data:{}方式
   data () {
     let validateName = (rule, value, callback) => {
@@ -111,13 +268,16 @@ export default {
         callback()
       }
     }
-    let validateEmail = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('邮箱不能为空'))
-      } else {
-        callback()
-      }
-    }
+    // let validateEmail = (rule, value, callback) => {
+    //   let regEmail = /^[A-Za-zd]+([-_.][A-Za-zd]+)*@([A-Za-zd]+[-.])+[A-Za-zd]{2,5}$/
+    //   if (value === '') {
+    //     callback(new Error('邮箱不能为空'))
+    //   } else if (!regEmail.test(value)) {
+    //     callback(new Error('邮箱格式不正确!'))
+    //   } else {
+    //     callback()
+    //   }
+    // }
     let validateCode = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('验证码不能为空'))
@@ -128,14 +288,13 @@ export default {
     const rolesOptions = ['用户', '管理员']
     // 相当于以前的function data(){},这是es5之前的写法，新版本可以省略掉function
     return {
-      sendAuthCode: true,
-      auth_time: 0,
       dialogRegisterVisible: false,
       user: {
         is_superuser: 0, // or 'admin'
         username: '',
         password: ''
         // 为了登录方便，可以直接在这里写好用户名和密码的值
+
       },
       imgSrc: require('../assets/img1.png'),
       checkedRoles: [],
@@ -158,9 +317,7 @@ export default {
         checkPass: [
           {validator: validatePass2, trigger: 'blur'}
         ],
-        email: [
-          {validator: validateEmail, trigger: 'blur'}
-        ],
+        email: [],
         code: [
           {validator: validateCode, trigger: 'blur'}
         ]
@@ -168,6 +325,15 @@ export default {
     }
   },
   methods: {
+    handleScroll: function () {
+      const scrollY = window.scrollY
+      const background = document.querySelector('.background')
+      if (scrollY !== 0) {
+        background.style.backgroundPosition = `calc(50% + ${scrollY}px) calc(50% + ${scrollY}px)`
+      } else {
+        background.style.backgroundPosition = ''
+      }
+    },
     async submitForm () {
       if (this.checkedRoles.length !== 0 && this.checkedRoles[0] === '用户') {
         this.user.is_superuser = '0'
@@ -245,7 +411,6 @@ export default {
       this.dialogRegisterVisible = true
     },
     sendCode () {
-      this.auth_time = 6
       let code = ''
       for (let i = 0; i < 6; i++) {
         code += Math.floor(Math.random() * 10)
@@ -258,47 +423,21 @@ export default {
       const header = {'Authorization': auth}
       axios.post('http://127.0.0.1:8000/api/sendemail', formData, {'headers': header}).then(response => {
         console.log(response.data)
-        if (response.data.result && this.ruleForm.email !== '') {
+        if (response.data.result) {
           this.$message({
             message: '发送成功',
             type: 'success'
           })
-          this.sendAuthCode = false
-          // eslint-disable-next-line camelcase
-          let auth_timetimer = setInterval(() => {
-            this.auth_time--
-            if (this.auth_time <= 0) {
-              this.sendAuthCode = true
-              clearInterval(auth_timetimer)
-            }
-          }, 1000)
         } else {
-          if (this.ruleForm.email === '') {
-            response.data.errorInfo = '不能发送空邮箱'
-          }
           this.$message.error(response.data.errorInfo)
-          this.sendAuthCode = true
         }
       })
     }
+
+  },
+  destroyed () {
+    window.removeEventListener('scroll', this.handleScroll, true)
   }
 }
 
 </script>
-
-<style scoped>
-.background{
-  width: 100%;
-  height: 100%;  /**宽高100%是为了图片铺满屏幕 */
-  left: 0;
-  top: 0;
-  z-index:-1;
-  position: absolute;
-}
-.mycard{
-  left: 70%;
-  top: 10%;
-  position: absolute;
-}
-
-</style>

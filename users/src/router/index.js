@@ -83,6 +83,9 @@ var router = new Router({
       name: 'Segmentation',
       component: Segmentation
     }
-  ]
+  ],
+  scrollBehavior (to, from, savedPosition) {
+    return {x: 0, y: 0}
+  }
 })
 export default router
