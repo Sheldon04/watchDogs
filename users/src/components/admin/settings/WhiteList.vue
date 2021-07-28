@@ -181,7 +181,7 @@
         @close="faceClose"
         title="人脸照片"
         :visible.sync="seeDialogVisible"
-        width="20%"
+        width="25%"
         center>
         <el-image
           style="width: 300px; height: 300px"
