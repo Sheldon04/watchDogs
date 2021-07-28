@@ -78,9 +78,14 @@
                   size="mini"
                   @click="handleSee(scope.$index, scope.row)">查看</el-button>
                 <el-button
+                  v-if="scope.row.status === 0"
                   size="mini"
                   @click="handleDownload(scope.$index, scope.row)"
-                  :disabled="!tableData.status">下载</el-button>
+                  disabled>下载</el-button>
+                <el-button
+                  v-if="scope.row.status === 1"
+                  size="mini"
+                  @click="handleDownload(scope.$index, scope.row)">下载</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -133,23 +138,29 @@ export default {
       eleLink.remove()
     },
     handleDownload (index, row) {
-      let url = 'http://127.0.0.1:8000/media/tasks/20210728075419_50.png'
-      let image = new Image()
-      image.setAttribute('crossOrigin', 'anonymous')
-      image.src = url
-      image.onload = () => {
-        let canvas = document.createElement('canvas')
-        canvas.width = image.width
-        canvas.height = image.height
-        let ctx = canvas.getContext('2d')
-        ctx.drawImage(image, 0, 0, image.width, image.height)
-        canvas.toBlob((blob) => {
-          let url = URL.createObjectURL(blob)
-          this.download(url, name)
-          // 用完释放URL对象
-          URL.revokeObjectURL(url)
-        })
-      }
+      let formData = new FormData()
+      formData.append('id', row.id)
+      console.log(formData.get('id'))
+      axios.post('http://127.0.0.1:8000/api/deblur/download', formData, {'headers': this.headers}).then(res => {
+        console.log(res.data.detail.url)
+        let url = 'http://127.0.0.1:8000/media/' + res.data.detail.url
+        let image = new Image()
+        image.setAttribute('crossOrigin', 'anonymous')
+        image.src = url
+        image.onload = () => {
+          let canvas = document.createElement('canvas')
+          canvas.width = image.width
+          canvas.height = image.height
+          let ctx = canvas.getContext('2d')
+          ctx.drawImage(image, 0, 0, image.width, image.height)
+          canvas.toBlob((blob) => {
+            let url = URL.createObjectURL(blob)
+            this.download(url, name)
+            // 用完释放URL对象
+            URL.revokeObjectURL(url)
+          })
+        }
+      })
     },
     fileChange (file) {
       this.file = file

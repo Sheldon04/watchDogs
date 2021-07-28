@@ -625,8 +625,9 @@ def task_get_processed(request):
     result = True
     id = request.POST.get('id')
     try:
-        processed = mytask.objects.filter(id=id).first().values('processed')
-        detail['url'] = processed.name
+        processed = mytask.objects.filter(id=id).first()
+        print(processed.processed)
+        detail['url'] = processed.processed.name
     except Exception as e:
         print(e)
         result = False
