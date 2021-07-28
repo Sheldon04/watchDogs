@@ -79,7 +79,8 @@
                   @click="handleSee(scope.$index, scope.row)">查看</el-button>
                 <el-button
                   size="mini"
-                  @click="handleDownload(scope.$index, scope.row)">下载</el-button>
+                  @click="handleDownload(scope.$index, scope.row)"
+                  :disabled="!tableData.status">下载</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -96,7 +97,7 @@ import Banner from '../public/Banner'
 import axios from 'axios'
 export default {
   name: 'Deblur',
-  mounted () {
+  created () {
     axios.get('http://127.0.0.1:8000/api/deblur/gettasks', {'headers': this.headers}).then(response => {
       this.loading = true
       console.log(response.data)
@@ -118,11 +119,38 @@ export default {
       licenseImageUrl: '',
       textarea: '',
       tableData: [],
-      loading: false,
+      loading: true,
       file: ''
     }
   },
   methods: {
+    // 图片下载
+    download (href, name) {
+      let eleLink = document.createElement('a')
+      eleLink.download = name
+      eleLink.href = href
+      eleLink.click()
+      eleLink.remove()
+    },
+    handleDownload (index, row) {
+      let url = 'http://127.0.0.1:8000/media/tasks/20210728075419_50.png'
+      let image = new Image()
+      image.setAttribute('crossOrigin', 'anonymous')
+      image.src = url
+      image.onload = () => {
+        let canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+        let ctx = canvas.getContext('2d')
+        ctx.drawImage(image, 0, 0, image.width, image.height)
+        canvas.toBlob((blob) => {
+          let url = URL.createObjectURL(blob)
+          this.download(url, name)
+          // 用完释放URL对象
+          URL.revokeObjectURL(url)
+        })
+      }
+    },
     fileChange (file) {
       this.file = file
     },
@@ -176,8 +204,6 @@ export default {
       })
     },
     handleSee () {
-    },
-    handleDownload () {
     }
   }
 }
