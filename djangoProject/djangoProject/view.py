@@ -583,7 +583,6 @@ def task_add(request):
     detail = {}
     error_info=''
     result = True
-
     try:
         img = request.FILES.get('img')
         token = request.POST.get('token')
@@ -618,3 +617,19 @@ def task_get_all(request):
                                cls=DateEncoder)
 
     return JsonResponse(json.loads(response_data), safe=False)
+
+@api_view(['POST'])
+def task_get_processed(request):
+    detail = {}
+    error_info=''
+    result = True
+    id = request.POST.get('id')
+    try:
+        processed = mytask.objects.filter(id=id).first().values('processed')
+        detail['url'] = processed.name
+    except Exception as e:
+        print(e)
+        result = False
+        error_info = '下载失败'
+        detail['exception'] = repr(e)
+    return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})

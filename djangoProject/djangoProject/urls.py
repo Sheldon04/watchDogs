@@ -46,5 +46,6 @@ urlpatterns = [
     path('api/admin/whitelist/del', view.whitelist_delete), #删除白名单
     path('api/deblur/submit', view.task_add), #创建工单
     path('api/deblur/gettasks', view.task_get_all), #获取工单
+    path('api/deblur/download', view.task_get_processed), #获取工单
     path('api/admin/segmentation', view.add_segmentation), #新增监控区域划分
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
