@@ -44,8 +44,8 @@ export default {
 }
 
 .main {
-  left: 200px;
-  top: 100px;
+  left: 250px;
+  top: 130px;
   position: absolute;
 }
 

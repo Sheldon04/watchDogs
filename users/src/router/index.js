@@ -13,6 +13,7 @@ import FaceRegistration from '../components/admin/manage/FaceRegistration'
 import StuffManage from '../components/admin/manage/StuffManage'
 import Segmentation from '../components/admin/settings/Segmentation'
 import WhiteList from '../components/admin/settings/WhiteList'
+import Deblur from '../components/user/Deblur'
 
 Vue.use(Router)
 
@@ -82,6 +83,11 @@ var router = new Router({
       path: '/admin/segmentation',
       name: 'Segmentation',
       component: Segmentation
+    },
+    {
+      path: '/user/deblur',
+      name: 'Deblur',
+      component: Deblur
     }
   ],
   scrollBehavior (to, from, savedPosition) {

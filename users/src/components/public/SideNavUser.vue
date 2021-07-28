@@ -19,6 +19,10 @@
       <i class="el-icon-setting"></i>
       <span slot="title">入侵统计</span>
     </el-menu-item>
+    <el-menu-item index="/user/deblur">
+      <i class="el-icon-upload"></i>
+      <span slot="title">模糊图像处理</span>
+    </el-menu-item>
   </el-menu>
 </template>
 

@@ -181,10 +181,10 @@
         @close="faceClose"
         title="人脸照片"
         :visible.sync="seeDialogVisible"
-        width="10%"
+        width="20%"
         center>
         <el-image
-          style="width: 100px; height: 100px"
+          style="width: 300px; height: 300px"
           :src="licenseImageUrl"
           :fit="fit"
           v-loading="faceLoading"></el-image>

@@ -114,14 +114,14 @@
         @close="detailClose"
         title="入侵详情"
         :visible.sync="detailVisible"
-        width="50%"
-        center>
-        <el-carousel :interval="5000" arrow="always">
+        center
+        class="detail-dialog">
+        <el-carousel style="width: 100%" :interval="5000" arrow="always">
           <el-carousel-item v-for="img in imgs" :key="img">
             <el-image
-              style="width: 300px; height: 300px"
+              style="width: 960px; height: 540px ; max-width: 100%; max-height: 100%;"
               :src="img"
-              :fit="fit"></el-image>
+            ></el-image>
           </el-carousel-item>
         </el-carousel>
       </el-dialog>
@@ -135,10 +135,9 @@
   top: 100px;
   position: absolute;
 }
-
-.user-menu {
-  left: 50px;
-  top: 5px;
+.el-menu {
+  width: 200px;
+  height: 800px;
 }
 </style>
 
@@ -147,7 +146,6 @@
   background-color: #A2BCC6FF;
   height: 100px !important;
 }
-
 .el-table .warning-row {
   background: #fbede5;
 }
@@ -160,11 +158,11 @@
 <script>
 import axios from 'axios'
 import MyDropdown from '../../public/Dropdown'
-import MySidenavAdmin from '../../public/SideNavAdmin'
 import Banner from '../../public/Banner'
+import MySidenavAdmin from '../../public/SideNavAdmin'
 export default {
   name: 'AttackListAdmin',
-  components: {Banner, MySidenavAdmin, MyDropdown},
+  components: {MySidenavAdmin, Banner, MyDropdown},
   mounted () {
     const auth = 'Token ' + localStorage.getItem('token')
     const header = {'Authorization': auth}
@@ -210,6 +208,17 @@ export default {
     },
     handleClick (row) {
       this.detailVisible = true
+      let date = row.date
+      let time = row.time
+      let formData = new FormData()
+      formData.append('date', date)
+      formData.append('time', time)
+      const auth = 'Token ' + localStorage.getItem('token')
+      const header = {'Authorization': auth}
+      axios.post('http://127.0.0.1:8000/api/attacklistuser/detail', formData, {'headers': header}).then(response => {
+        console.log(response.data)
+        this.imgs = response.data
+      })
     },
     detailClose () {
       this.detailVisible = false
@@ -228,7 +237,7 @@ export default {
       timespan: ['00:00:00', '23:59:59'],
       tableData: [],
       detailVisible: false,
-      imgs: ['http://127.0.0.1:8000/media/photos/20210724112211_77.jpg', 'http://127.0.0.1:8000/media/photos/20210724112211_77.jpg', 'http://127.0.0.1:8000/media/photos/20210724112211_77.jpg'],
+      imgs: [],
       pickerOptions: {
         disabledDate (time) {
           return time.getTime() > Date.now()

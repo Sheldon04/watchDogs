@@ -19,7 +19,7 @@
             <el-option label="低(1)" value="1"></el-option>
           </el-select>
           <el-button @click="addArea" type="primary" plain :disabled="isDisabled">添加一个区域</el-button>
-          <el-button type="success" @click="submit">提交修改</el-button>
+          <el-button type="success" @click="submit" :disabled="!isDisabled">提交修改</el-button>
           <br>
           <br>
           <canvas id="canvas" width="1280" height="720"></canvas>
@@ -94,10 +94,19 @@ export default {
     },
     submit () {
       let formData = new FormData()
-      formData.append('top', this.rect.top)
-      formData.append('left', this.rect.left)
-      formData.append('width', this.rect.width)
-      formData.append('height', this.rect.height)
+      let rect = this.canvas.getObjects()[1]
+      formData.append('top', rect.aCoords.tl.y)
+      formData.append('left', rect.aCoords.tl.x)
+      formData.append('width', rect.aCoords.tr.x - rect.aCoords.tl.x)
+      formData.append('height', rect.aCoords.bl.y - rect.aCoords.tl.y)
+      console.log(rect.aCoords.tl.x)
+      console.log(rect.aCoords.tl.y)
+      console.log(rect.aCoords.tr.x)
+      console.log(rect.aCoords.tr.y)
+      console.log(rect.aCoords.br.x)
+      console.log(rect.aCoords.br.y)
+      console.log(rect.aCoords.bl.x)
+      console.log(rect.aCoords.bl.y)
       axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
         this.$message.success('添加成功')
         this.licenseImageUrl = this.localMedia + res.data

@@ -5,56 +5,80 @@
         <el-header class="header">
           <banner></banner>
         </el-header>
-        <el-aside width="200px">
+        <el-aside width="200px" class="side">
           <my-dropdown></my-dropdown>
-          <my-sidenav-admin></my-sidenav-admin>
+          <my-sidnav-user></my-sidnav-user>
         </el-aside>
         <el-main class="main">
-          <el-form ref="form" :model="form" status-icon :rules="rules" label-width="130px" class="demo-form">
-            <el-form-item label="注册人姓名">
-              <el-input v-model="form.username"></el-input>
-            </el-form-item>
-            <el-form-item label="手机" prop="phone">
-              <el-input v-model="form.phone"></el-input>
-            </el-form-item>
-            <el-form-item label="权限">
-              <el-select v-model="form.level" placeholder="权限">
-                <el-option label="高(3)" value="3"></el-option>
-                <el-option label="中(2)" value="2"></el-option>
-                <el-option label="低(1)" value="1"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="准入时间">
-                <el-time-picker
-                  is-range
-                  v-model="form.timespan"
-                  range-separator="至"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                  placeholder="选择时间范围"
-                  value-format="HH:mm:ss">
-                </el-time-picker>
-            </el-form-item>
-            <el-form-item label="上传头像">
+          <el-tabs type="border-card" class="border-card1">
+            <el-tab-pane>
+              <span slot="label"><i class="el-icon-date"></i>提交工单</span>
               <el-upload
                 class="avatar-uploader"
                 :limit="1"
-                :action="uploadURL"
                 :headers="headers"
                 :on-remove="removeChange"
                 :on-error="uploadError"
                 :on-change="fileChange"
                 :before-upload="beforeAvatarUpload"
-                :auto-upload="false">
+                :auto-upload="false"
+                align="center">
                 <img v-if="licenseImageUrl" :src="licenseImageUrl" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                <div class="el-upload__tip" slot="tip">在此处上传需要处理的图片</div>
               </el-upload>
-              <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传</el-button>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="submitReg">立即注册</el-button>
-            </el-form-item>
-          </el-form>
+              <br>
+              <el-input
+                class="textarea"
+                type="textarea"
+                :rows="10"
+                placeholder="在此处输入描述信息"
+                v-model="textarea">
+              </el-input>
+              <br>
+            </el-tab-pane>
+            <el-button type="primary" @click="submit" class="submit-button">提交</el-button>
+          </el-tabs>
+          <el-table
+            v-loading = 'loading'
+            class="border-card2"
+            :data="tableData"
+            stripe
+            :default-sort = "{prop: 'id', order: 'ascending'}">
+            <el-table-column
+              prop="id"
+              label="ID"
+              type="index"
+              width="80"
+              sortable>
+            </el-table-column>
+            <el-table-column
+              prop="date"
+              label="创建时间"
+              width="160"
+              sortable
+              align="center">
+            </el-table-column>
+            <el-table-column
+              label="状态"
+              prop="status"
+              width="160"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              align="center"
+              label="操作"
+              width="160">
+              <template slot-scope="scope">
+                <el-button
+                  size="mini"
+                  @click="handleSee(scope.$index, scope.row)">查看</el-button>
+                <el-button
+                  size="mini"
+                  @click="handleDownload(scope.$index, scope.row)">下载</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-main>
       </el-container>
     </div>
@@ -62,14 +86,12 @@
 </template>
 
 <script>
+import MyDropdown from '../public/Dropdown'
+import MySidnavUser from '../public/SideNavUser'
+import Banner from '../public/Banner'
 import axios from 'axios'
-import MyDropdown from '../../public/Dropdown'
-import MySidenavAdmin from '../../public/SideNavAdmin'
-import Banner from '../../public/Banner'
-
 export default {
-  name: 'FaceRegistration',
-  components: {Banner, MySidenavAdmin, MyDropdown},
+  name: 'Deblur',
   computed: {
     headers () {
       return {
@@ -77,37 +99,14 @@ export default {
       }
     }
   },
+  components: {Banner, MySidnavUser, MyDropdown},
   data () {
-    let validatePhone = (rule, value, callback) => {
-      let reg = 11 && /^((13|14|15|17|18)[0-9]{1}\d{8})$/
-      if (value === '') {
-        callback(new Error('请输入手机号码'))
-      } else {
-        if (!reg.test(this.form.phone)) {
-          callback(new Error('请输入正确的手机号码!'))
-        }
-        callback()
-      }
-    }
     return {
-      hasFace: false,
-      uploadURL: this.localAPI + 'admin/uploadface',
-      regURL: this.localAPI + 'admin/whitelist/add',
-      imgSrc: require('../../../assets/img3.jpg'),
+      submitURL: this.localAPI + 'deblur/submit',
       licenseImageUrl: '',
-      form: {
-        username: '',
-        phone: '',
-        area: '',
-        timespan: ['00:00:00', '23:59:59'],
-        level: '',
-        file: ''
-      },
-      rules: {
-        phone: [
-          { validator: validatePhone, trigger: 'blur' }
-        ]
-      }
+      textarea: '',
+      tableData: [],
+      loading: false
     }
   },
   methods: {
@@ -137,25 +136,7 @@ export default {
     removeChange (file, fileList) {
       console.log('你要移除的文件为', file.name)
     },
-    // eslint-disable-next-line handle-callback-err
-    submitUpload () {
-      let formData = new FormData()
-      formData.append('phone', this.form.phone)
-      formData.append('face', this.form.file.raw)
-      console.log(formData.get('face'))
-      console.log(formData.get('phone'))
-      console.log(this.form.timespan)
-      axios.post(this.uploadURL, formData, {'headers': this.headers}).then(res => {
-        this.$message.success('上传成功')
-        this.licenseImageUrl = this.localMedia + res.data
-        this.hasFace = true
-        console.log(this.licenseImageUrl)
-        // eslint-disable-next-line handle-callback-err
-      }).catch(err => {
-        this.$message.error('上传失败')
-      })
-    },
-    submitReg () {
+    submit () {
       let formData = new FormData()
       formData.append('name', this.form.username)
       formData.append('phone_number', this.form.phone)
@@ -186,23 +167,51 @@ export default {
           console.log(formData.get('time_span'))
         }
       })
+    },
+    handleSee () {
+    },
+    handleDownload () {
     }
   }
 }
 </script>
 
 <style scoped>
+.el-menu {
+  width: 200px;
+  height: 800px;
+}
 
 .header {
   background-color: #A2BCC6FF;
   height: 100px !important;
 }
-.demo-form {
-  top: 25%;
-  left: 30%;
+.side {
+  top: 100px;
+}
+.main {
+  left: 300px;
+  top: 130px;
+  width: 1000px;
+  height: 680px;
   position: absolute;
 }
 
+.border-card1 {
+  width: 400px;
+  height: 620px;
+  left: 10px;
+  top: 20px;
+  position: absolute;
+}
+
+.border-card2 {
+  width: 600px;
+  height: 600px;
+  left: 500px;
+  top: 20px;
+  position: absolute;
+}
 </style>
 
 <style>
