@@ -121,7 +121,7 @@ export default {
         }],
         series: [
           {
-            name: '模拟数据',
+            name: '入侵数量',
             type: 'line',
             smooth: true,
             symbol: 'none',
