@@ -15,6 +15,7 @@
               <span slot="label"><i class="el-icon-date"></i>提交工单</span>
               <el-upload
                 class="avatar-uploader"
+                :action="submitURL"
                 :limit="1"
                 :headers="headers"
                 :on-remove="removeChange"
@@ -48,7 +49,6 @@
             <el-table-column
               prop="id"
               label="ID"
-              type="index"
               width="80"
               sortable>
             </el-table-column>
@@ -64,6 +64,10 @@
               prop="status"
               width="160"
               align="center">
+              <template slot-scope="scope">
+                <span v-if="scope.row.status === 0">未完成</span>
+                <span v-if="scope.row.status === 1">已完成</span>
+              </template>
             </el-table-column>
             <el-table-column
               align="center"
@@ -92,6 +96,14 @@ import Banner from '../public/Banner'
 import axios from 'axios'
 export default {
   name: 'Deblur',
+  mounted () {
+    axios.get('http://127.0.0.1:8000/api/deblur/gettasks', {'headers': this.headers}).then(response => {
+      this.loading = true
+      console.log(response.data)
+      this.tableData = response.data
+      this.loading = false
+    })
+  },
   computed: {
     headers () {
       return {
@@ -106,21 +118,18 @@ export default {
       licenseImageUrl: '',
       textarea: '',
       tableData: [],
-      loading: false
+      loading: false,
+      file: ''
     }
   },
   methods: {
     fileChange (file) {
-      this.form.file = file
+      this.file = file
     },
     beforeAvatarUpload (file) {
       // eslint-disable-next-line no-redeclare
       const isJPG = file.type === 'image/jpeg'
       const isLt10M = file.size / 1024 / 1024 < 10
-      if (this.form.phone === '') {
-        this.$message.error('请先输入手机号')
-        return false
-      }
       if (!isJPG) {
         this.$message.error('上传头像图片只能是 JPG 格式!')
       }
@@ -138,33 +147,31 @@ export default {
     },
     submit () {
       let formData = new FormData()
-      formData.append('name', this.form.username)
-      formData.append('phone_number', this.form.phone)
-      formData.append('time_span', this.form.timespan)
-      formData.append('level', this.form.level)
-      console.log(formData.get('time_span'))
-      console.log(formData.get('phone'))
-      axios.post(this.regURL, formData, {'headers': this.headers}).then(res => {
+      formData.append('token', localStorage.getItem('token'))
+      formData.append('img', this.file.raw)
+      console.log(formData.get('token'))
+      console.log(formData.get('img'))
+      axios.post(this.submitURL, formData, {'headers': this.headers}).then(res => {
         const {result, errorInfo} = res.data
-        if (result === true && this.hasFace === true) {
+        if (result === true) {
           this.$message({
             showClose: true,
-            message: '注册成功',
+            message: '提交成功',
             type: 'success'
           })
+          axios.get('http://127.0.0.1:8000/api/deblur/gettasks', {'headers': this.headers}).then(response => {
+            this.loading = true
+            console.log(response.data)
+            this.tableData = response.data
+            this.loading = false
+          })
         } else {
-          let msg = errorInfo
-          if (this.hasFace === false) {
-            msg = '未上传人脸照片'
-          }
           this.$message({
             showClose: true,
-            message: msg,
+            message: errorInfo,
             type: 'error'
           })
-          console.log(formData.get('name'))
-          console.log(formData.get('phone_number'))
-          console.log(formData.get('time_span'))
+          console.log(errorInfo)
         }
       })
     },
@@ -190,9 +197,9 @@ export default {
   top: 100px;
 }
 .main {
-  left: 300px;
+  left: 250px;
   top: 130px;
-  width: 1000px;
+  width: 1200px;
   height: 680px;
   position: absolute;
 }

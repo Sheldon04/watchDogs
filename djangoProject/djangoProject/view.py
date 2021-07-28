@@ -22,28 +22,35 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
 from datamodel import models
-from datamodel.models import invationRecord, WhiteList, mypicture
+from datamodel.models import invationRecord, WhiteList, mypicture, mytask, segmentation
 from djangoProject import settings
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
 from monitor.my_thread import Invasion_Record_Saver
-import torch
+#import torch
 import face_recognition
 
 #_model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
 
-photos = list(mypicture.objects.values("photo"))
+admins = list(mypicture.objects.values("photo", "phone"))
 
-print(photos)
+print(admins)
 
 known_face_encodings = []
+admin_levels_names = []
 
-for photo in photos:
-    img = face_recognition.load_image_file('./media/' + photo['photo'])
+for admin in admins:
+    img = face_recognition.load_image_file('./media/' + admin['photo'])
+    item = {}
+    temp = WhiteList.objects.filter(phone_number=admin['phone']).values('name', 'level')[0]
+    item['name'] = temp['name']
+    item['level'] = temp['level']
+    admin_levels_names.append(item)
     face_encoding = face_recognition.face_encodings(img)[0]
     known_face_encodings.append(face_encoding)
 
 print('known face encode done')
+print(admin_levels_names)
 
 #日期转码
 class DateEncoder(json.JSONEncoder):
@@ -150,10 +157,10 @@ def gen(d):
             time.sleep(.001)
             cv2.imwrite('./1.jpg', frame)
             flag, buffer = cv2.imencode('.jpg', frame)
-            if is_invade == True:
-                t = Invasion_Record_Saver(_date, _time, num)
-                t.start()
-                print('invade')
+            # if is_invade == True:
+            #     t = Invasion_Record_Saver(_date, _time, num)
+            #     t.start()
+            #     print('invade')
             yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n\r\n')
 
 #处理过后视频推流
@@ -551,3 +558,63 @@ def get_invasion_detail(request):
         filename_list.append('http://127.0.0.1:8000/media/screen_shots/' + datetime + '/' + str(i) + '.jpg')
     print(filename_list)
     return Response(filename_list)
+
+@api_view(['POST'])
+def add_segmentation(request):
+    detail = {}
+    error_info=''
+    result = True
+    top = request.POST.get("top")
+    left = request.POST.get("left")
+    width = request.POST.get("width")
+    height = request.POST.get("height")
+    try:
+        segmentation.objects.create(top=top, left=left, width=width, height=height, level=1)
+        print('添加成功')
+    except Exception as e:
+        print(e)
+        result = False
+        error_info = '添加失败'
+        print('添加失败')
+    return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})
+
+@api_view(['POST'])
+def task_add(request):
+    detail = {}
+    error_info=''
+    result = True
+
+    try:
+        img = request.FILES.get('img')
+        token = request.POST.get('token')
+        #phone = '222'
+        uid = Token.objects.filter(key=token).first().user_id
+        print(uid)
+        print(img)
+        now = datetime.datetime.now()
+        date = now.strftime("%Y-%m-%d")
+        time = now.strftime("%H:%M:%S")
+        task_model = models.mytask(
+            date=date,
+            time=time,
+            status=0,
+            uid=uid,  # 拿到图片对应用户id
+            origin=img # 拿到图片
+        )
+        task_model.save()  # 保存图片
+        print(task_model.origin.name)
+        #启动处理线程
+        #
+        #此处调用线程
+        #
+    except:
+        result = False
+    return JsonResponse({'result': result, 'detail': detail, 'errorInfo': error_info})
+
+@api_view(['GET'])
+def task_get_all(request):
+    taskList = mytask.objects.values('id','date','time','status')
+    response_data = json.dumps(list(taskList.values('id','date','time','status')),
+                               cls=DateEncoder)
+
+    return JsonResponse(json.loads(response_data), safe=False)

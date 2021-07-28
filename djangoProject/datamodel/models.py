@@ -30,3 +30,12 @@ class segmentation(models.Model):
     top = models.CharField(max_length=20)
     width = models.CharField(max_length=20)
     height = models.CharField(max_length=20)
+    level = models.CharField(max_length=20)
+
+class mytask(models.Model):
+    uid = models.IntegerField()
+    date = models.DateField()
+    time = models.TimeField()
+    status = models.IntegerField()
+    origin = models.ImageField(upload_to='tasks', default='', storage=ImageStorage())
+    processed = models.ImageField(upload_to='processed', default='', storage=ImageStorage())
