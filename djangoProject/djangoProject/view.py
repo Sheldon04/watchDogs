@@ -26,11 +26,13 @@ from datamodel.models import invationRecord, WhiteList, mypicture, mytask, segme
 from djangoProject import settings
 from monitor.motion_detect_MOG2 import Detector
 from django.views.decorators.http import require_http_methods
+
+from monitor.motion_detect_rtmp import Detector_RTMP
 from monitor.my_thread import Invasion_Record_Saver
-#import torch
+import torch
 import face_recognition
 
-#_model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+_model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
 
 admins = list(mypicture.objects.values("photo", "phone"))
 
@@ -153,7 +155,7 @@ def user_update(request):
 
 def gen(d):
     while True:
-        for frame, is_invade, num, _date, _time in d.run():
+        for frame in d.run2():
             time.sleep(.001)
             cv2.imwrite('./1.jpg', frame)
             flag, buffer = cv2.imencode('.jpg', frame)
@@ -168,8 +170,17 @@ def gen(d):
 @permission_classes((AllowAny,))
 @authentication_classes(())
 def send_video(request):
-    d = Detector(1)
+    d = Detector_RTMP(3, model=_model, known_face_encodings=known_face_encodings, admin_levels_names=admin_levels_names)
     return StreamingHttpResponse(gen(d), content_type="multipart/x-mixed-replace; boundary=frame")
+
+@api_view(['GET'])
+@permission_classes((AllowAny,))
+@authentication_classes(())
+def start_detector(request):
+    print('start detector')
+    d = Detector(3, model=_model, known_face_encodings=known_face_encodings, admin_levels_names=admin_levels_names)
+    d.run2()
+    return HttpResponse('ok')
 
 def file_iterator(file_name, chunk_size=8192, offset=0, length=None):
     camera = cv2.VideoCapture(file_name)

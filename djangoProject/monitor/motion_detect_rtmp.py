@@ -3,16 +3,20 @@ import base64
 import cv2
 import time
 from datetime import datetime
+from time import time, sleep
 import os
 import torch
 import pinyin
 
 # 使用MOG2模型进行移动物体标注更稳定，但是易出现噪点（如当场景中大量移动物体移出场景时）
 # 使用固定背景进行背景减除在上述场景下不会出现噪点，但是需要定期更新背景图
+from cv2 import CAP_FFMPEG
+
+from datamodel.models import segmentation
 from monitor.my_thread import Invasion_Record_Saver
 
 
-class Detector:
+class Detector_RTMP:
     def __init__(self, choice, model=None, known_face_encodings=None, admin_levels_names=None):
         print('init detector')
         self.conf = {'save_path': './video/', 'min_motion_frames': 10, 'enable_save_img': True}
@@ -32,9 +36,10 @@ class Detector:
             self.camera = cv2.VideoCapture(file_path)
         # 使用rtmp转发服务器读取视频流
         else:
-            file_path = 'http://47.106.148.74:80/tv_file/test.m3u8'
+            # file_path = 'http://47.106.148.74:80/tv_file/test.m3u8'
+            file_path = 'rtmp://47.106.148.74:1935/tv_file/test'
             # file_path = 'C:\\Users\\ASUS\\Desktop\\data\\example video.avi'
-            self.camera = cv2.VideoCapture(file_path)
+            self.camera = cv2.VideoCapture(file_path, CAP_FFMPEG)
 
         # 场景的静态背景，用于计算差分图（run1()）
         # self.bg = cv2.imread('./monitor/data/back.jpg')
@@ -45,6 +50,18 @@ class Detector:
         self.yolo = model  # or yolov5m, yolov5l, yolov5x, custom
         self.known_face_encodings = known_face_encodings
         self.admin_levels_names = admin_levels_names
+
+        self.segmentation = [[], [], []]
+        seg_list = list(segmentation.objects.values('top','left','width','height', 'level'))
+        print(seg_list)
+        for seg in seg_list:
+            xmin = int(seg['left'])
+            ymin = int(seg['top'])
+            xmax = int(seg['left']) + int(seg['width'])
+            ymax = int(seg['top']) + int(seg['height'])
+            self.segmentation[int(seg['level']) - 1].append({'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax})
+
+        print(self.segmentation)
 
         # 判断视频是否打开
         if self.camera.isOpened():
@@ -276,63 +293,53 @@ class Detector:
     def run2(self):
         # 测试用,查看视频size
         size = (1280, 720)
-
-        is_first_invade = True  # 一次入侵中，是否第一次被记录，用于判断入侵开始时间
-        is_invade = False  # 是否有入侵
-        invade_frame_cnt = 0
-        invasion_date = None
-        invasion_time = None
+        fps = 20  # 直播流帧率
+        maxDelay = 3  # 最大容许延时
+        startTime = time()  # 开始时间
+        frames = 0
+        store = None
         while True:
             return_flag = False
-
-            grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
-            frame_lwpCV = cv2.resize(frame_lwpCV, size)
-
+            frames += 1
+            try:
+                grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
+                if not grabbed:
+                    continue
+                # 延时小于最大容许延时才进行识别
+                if frames <= (time() - startTime - maxDelay) * fps:
+                    for index, item in store.iterrows():
+                        cv2.rectangle(frame_lwpCV, (item['xmin'], item['ymin']), (item['xmax'], item['ymax']), (255, 255, 0), 2)
+                        cv2.putText(frame_lwpCV, str(item['name']), (item['xmin'] + 6, item['ymax'] - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255), 1)
+                    yield frame_lwpCV
+                    continue
+                # frame_lwpCV = cv2.resize(frame_lwpCV, size)
+            except:
+                continue
+            # if not grabbed:
+            #     continue
+            print('process')
             # yolov5
             video = frame_lwpCV.copy()
             # video = frame_lwpCV[:, :, ::-1]
             # Inference
             results = self.yolo(video)
-
-            # 开始录像
-            if 0 in list(results.pandas().xyxy[0]['class']):
-                invade_frame_cnt += 1
-                if invade_frame_cnt > self.conf['min_motion_frames'] and self.conf[
-                    'enable_save_img'] and is_first_invade:
-                    now = datetime.now()
-                    self.filename = now.strftime("%Y-%m-%d-%H-%M-%S")
-                    invasion_date = now.strftime("%Y-%m-%d")
-                    invasion_time = now.strftime("%H:%M:%S")
-                    self.start_video(size, self.filename)
-                    path = './media/screen_shots/' + self.filename + '/0.jpg'
-                    print('save picture to: ', path)
-                    cv2.imwrite(path, frame_lwpCV)
-                    is_first_invade = False
-                if invade_frame_cnt > 500:
-                    # self.conf['enable_save_img'] = False
-                    self.stop_video(invasion_date, invasion_time)
-                    is_first_invade = True
-                    invade_frame_cnt = 0
-                    print('forced stop')
-                    # self.conf['enable_save_img'] = False
-            else:
-                # 没有移动物体时停止录制视频
-                # print('invade stop')
-                self.stop_video(invasion_date, invasion_time)
-                is_first_invade = True
-                invade_frame_cnt = 0
-
+            store = results.pandas().xyxy[0]
             results.render()  # updates results.imgs with boxes and labels
-
-            if self.video_writer != None:
-                self.video_writer.write(results.imgs[0])
-                if invade_frame_cnt % 40 == 0:
-                    path = './media/screen_shots/' + self.filename + '/' + str(int(invade_frame_cnt / 40)) + '.jpg'
-                    print('save picture to: ', path)
-                    cv2.imwrite(path, frame_lwpCV)
 
             # 返回移动物体标注后的图像，移动物体数，是否为首次入侵，入侵时间
             yield results.imgs[0]
+
+            # if frame_cnt % 5 == 0:
+            for i in range(3):
+                for seg in self.segmentation[i]:
+                    xmin = seg['xmin']
+                    ymin = seg['ymin']
+                    xmax = seg['xmax']
+                    ymax = seg['ymax']
+                    msg = 'Area Level: ' + str(i + 1)
+                    cv2.rectangle(results.imgs[0], (xmin, ymin), (xmax, ymax), (i * 60, 255, 0), 2)
+                    cv2.putText(results.imgs[0], msg, (xmin + 6, ymax - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255), 1)
+            # frame_cnt = frame_cnt % 5 + 1
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

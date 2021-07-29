@@ -140,17 +140,17 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
                         # 不发邮件，记录入侵级别为1
                         if admin_level > self.area_level:
                             self.invade_level = 1
-                            self.send_my_mail(True, name)
+                            # self.send_my_mail(True, name)
                             print(name + '进入，警戒等级1级')
                         # 发邮件，入侵级别为2
                         elif admin_level == self.area_level:
                             self.invade_level = 2
-                            self.send_my_mail(True, name)
+                            # self.send_my_mail(True, name)
                             print(name + '进入，警戒等级2级')
                         # 发邮件，入侵级别为3
                         else:
                             self.invade_level = 3
-                            self.send_my_mail(True, name)
+                            # self.send_my_mail(True, name)
                             print(name + '进入，警戒等级3级')
                         flag = False
                     name = pinyin.get_initial(name, delimiter="").lower()
@@ -175,7 +175,7 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
         if flag:
             # 未知人员进入，发邮件，入侵级别为3
             self.invade_level = 3
-            self.send_my_mail(False)
+            # self.send_my_mail(False)
             print('未知人员进入，警戒等级3级')
 
     def send_my_mail(self, is_staff, name=None):
