@@ -14,6 +14,8 @@ import StuffManage from '../components/admin/manage/StuffManage'
 import Segmentation from '../components/admin/settings/Segmentation'
 import WhiteList from '../components/admin/settings/WhiteList'
 import Deblur from '../components/user/Deblur'
+import AboutUs from '../components/AboutUs'
+import Contact from '../components/Contact'
 
 Vue.use(Router)
 
@@ -88,6 +90,16 @@ var router = new Router({
       path: '/user/deblur',
       name: 'Deblur',
       component: Deblur
+    },
+    {
+      path: '/aboutus',
+      name: 'AboutUs',
+      component: AboutUs
+    },
+    {
+      path: '/contactus',
+      name: 'Contact',
+      component: Contact
     }
   ],
   scrollBehavior (to, from, savedPosition) {

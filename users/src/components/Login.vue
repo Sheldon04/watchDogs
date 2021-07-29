@@ -1,25 +1,26 @@
 /* eslint-disable */
 <template>
   <div>
-    <h1>Welcome</h1>
+  <h1>Welcome</h1>
     <div class="background">
       <span>WatchDogs</span>
     </div>
     <div>
-      <footer id="footer" style="width: 100%">
+      <footer id="footer" style="width: 100%; height: 150px">
         <table>
           <tr>
             <td width="900px"></td>
             <td rowspan="3" style="text-align: left">
               <p>·Copyright © 2021 WatchDogs.All rights reserved.</p>
+              <p>·© 2021 WatchDogs.All rights reserved.</p>
               <p>·© 2021 WatchDogs.版权所有。</p>
             </td>
           </tr>
           <tr>
-            <td style="text-align: center"><el-button type="text" style="font-size: larger;color: white">关于我们</el-button></td>
+            <td style="text-align: center"><el-button type="text" style="font-size: larger;color: white" @click="aboutUs">关于我们</el-button></td>
           </tr>
           <tr>
-            <td style="text-align: center"><el-button type="text" style="font-size: larger;color: white">联系我们</el-button></td>
+            <td style="text-align: center"><el-button type="text" style="font-size: larger;color: white" @click="contactUs">联系我们</el-button></td>
           </tr>
         </table>
       </footer>
@@ -32,14 +33,14 @@
         </div>
         <table id="table_login">
           <tr>
-            <!--            <td>用户名</td>-->
+<!--            <td>用户名</td>-->
             <td>
               <el-input v-model="user.username" placeholder="请输入用户名"></el-input>
             </td>
           </tr>
           <br>
           <tr>
-            <!--            <td>密码</td>-->
+<!--            <td>密码</td>-->
             <td>
               <el-input type="password" v-model="user.password" placeholder="请输入密码"
                         @keydown.enter.native="submitForm"></el-input>
@@ -296,7 +297,6 @@ export default {
         // 为了登录方便，可以直接在这里写好用户名和密码的值
 
       },
-      imgSrc: require('../assets/img1.png'),
       checkedRoles: [],
       roles: rolesOptions,
       ruleForm: {
@@ -333,6 +333,14 @@ export default {
       } else {
         background.style.backgroundPosition = ''
       }
+    },
+    aboutUs () {
+      let { href } = this.$router.resolve({ path: '/aboutus' })
+      window.open(href, '_blank')
+    },
+    contactUs () {
+      let { href } = this.$router.resolve({ path: '/contactus' })
+      window.open(href, '_blank')
     },
     async submitForm () {
       if (this.checkedRoles.length !== 0 && this.checkedRoles[0] === '用户') {
