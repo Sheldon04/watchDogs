@@ -48,7 +48,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-style: 30px;
   letter-spacing: 2px;
 }
 
