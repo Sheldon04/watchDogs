@@ -49,7 +49,8 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
         self.process_video()
         self.process_pic()
         try:
-            invationRecord.objects.create(date=self._date, time=self._time, invation_num=self.invasion_num,
+            if self.area_level != 0:
+                invationRecord.objects.create(date=self._date, time=self._time, invation_num=self.invasion_num,
                                           level=self.invade_level, camera_id=1, area='厨房')
         except Exception as e:
             print(e)
@@ -105,6 +106,9 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
 
 
     def process_pic(self):
+        if self.area_level == 0:
+            return
+        time.sleep(0.1)
         times = self._time.split(':')
         filename = self._date + '-' + times[0] + '-' + times[1] + '-' + times[2]
         path = 'E:\\watchDogs\\djangoProject\\media\\screen_shots\\' + filename
@@ -113,6 +117,7 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
         print('pic num ', file_num)
         flag = True
         for i in range(0, file_num):
+            time.sleep(0.1)
             frame = cv2.imread(path + '\\' + str(i) + '.jpg')
             print('processing ' + str(i) + '.jpg')
             scale = 1
@@ -126,6 +131,7 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
             face_encodings = face_recognition.face_encodings(rgb_small_frame, known_face_locations=face_locations,
                                                              num_jitters=50)
             face_names = []
+            time.sleep(0.1)
             for face_encoding in face_encodings:
                 # See if the face is a match for the known face(s)
                 matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding, tolerance=0.4)
@@ -140,17 +146,17 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
                         # 不发邮件，记录入侵级别为1
                         if admin_level > self.area_level:
                             self.invade_level = 1
-                            # self.send_my_mail(True, name)
+                            self.send_my_mail(True, name)
                             print(name + '进入，警戒等级1级')
                         # 发邮件，入侵级别为2
                         elif admin_level == self.area_level:
                             self.invade_level = 2
-                            # self.send_my_mail(True, name)
+                            self.send_my_mail(True, name)
                             print(name + '进入，警戒等级2级')
                         # 发邮件，入侵级别为3
                         else:
                             self.invade_level = 3
-                            # self.send_my_mail(True, name)
+                            self.send_my_mail(True, name)
                             print(name + '进入，警戒等级3级')
                         flag = False
                     name = pinyin.get_initial(name, delimiter="").lower()
@@ -175,7 +181,7 @@ class Invasion_Record_Saver(threading.Thread):  # 继承父类threading.Thread
         if flag:
             # 未知人员进入，发邮件，入侵级别为3
             self.invade_level = 3
-            # self.send_my_mail(False)
+            self.send_my_mail(False)
             print('未知人员进入，警戒等级3级')
 
     def send_my_mail(self, is_staff, name=None):

@@ -199,102 +199,11 @@ class Detector_RTMP:
         self.camera.release()
         cv2.destroyAllWindows()
 
-    # 使用固定背景的背景减除
-    def run1(self):
-        flag = False
-        # 测试用,查看视频size
-        size = (int(self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                int(self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-
-        fps = 30  # 帧率
-        motion_body_cnt = 0  # 一帧中的移动物体
-        motion_frame_cnt = 0  # 出现移动物体的帧数
-        pre_motion_num = 0
-        is_first_invade = True
-        is_invade = False
-        while True:
-            start = time.time()
-            grabbed, frame_lwpCV = self.camera.read()  # 读取视频流
-            gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY)  # 转灰度图
-            gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
-
-            motion_body_cnt = 0
-            if not grabbed:
-                break
-            end = time.time()
-            invade_time = None
-            return_flag = False
-            # 运动检测部分
-            seconds = end - start
-            if seconds < 1.0 / fps:
-                time.sleep(1.0 / fps - seconds)
-
-            # 背景移除
-            # 在完成对帧的灰度转换和平滑后，就可计算与背景帧的差异，并得到一个差分图（different map）
-            # 还需要应用阈值来得到一幅黑白图像，并通过下面代码来膨胀（dilate）图像，从而对孔（hole）和缺陷（imperfection）进行归一化处理
-            img_delta = cv2.absdiff(gray_lwpCV, self.bg)
-            thresh = cv2.threshold(img_delta, 25, 255, cv2.THRESH_BINARY)[1]
-            thresh = cv2.dilate(thresh, None, iterations=4)
-            contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-            # 之后的和前面差不多
-            if len(contours) - pre_motion_num > 20:
-                # TODO 按照物体移动速度
-                pass
-            is_motion = False
-            for c in contours:
-                if cv2.contourArea(c) < 500 or cv2.contourArea(c) > 50000:
-                    continue
-                motion_body_cnt += 1
-                is_motion = True
-                # 有移动物体
-                (x, y, w, h) = cv2.boundingRect(c)
-                cv2.rectangle(thresh, (x, y), (x + w, y + h), (255, 255, 0), 2)
-                cv2.rectangle(frame_lwpCV, (x, y), (x + w, y + h), (0, 100, 255), 2)
-
-                if motion_frame_cnt > self.conf['min_motion_frames'] and self.conf['enable_save_img'] and is_first_invade:
-                    is_invade = True
-                    invade_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-                    self.start_video(size, invade_time)
-                    self.video_writer.write(frame_lwpCV)
-                    # TODO 测试后删除
-                    if motion_body_cnt > 500:
-                        self.conf['enable_save_img'] = False
-                        self.video_writer.release()
-                        print('stop')
-
-            # 没有移动物体时停止录制视频
-            if not is_motion:
-                # print('invade stop')
-                self.stop_video()
-                is_first_invade = True
-                is_invade = False
-                motion_frame_cnt = 0
-            else:
-                motion_frame_cnt += 1
-                if is_invade and is_first_invade:
-                    print('invade start')
-                    is_first_invade = False
-                    return_flag = True
-
-            yield frame_lwpCV, motion_body_cnt, return_flag, invade_time
-
-            pre_motion_num = motion_body_cnt
-            # pre_frame = gray_lwpCV
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                self.camera.release()
-                cv2.destroyAllWindows()
-                break
-        # When everything done, release the capture
-        self.camera.release()
-        cv2.destroyAllWindows()
-
     def run2(self):
         # 测试用,查看视频size
         size = (1280, 720)
         fps = 20  # 直播流帧率
-        maxDelay = 3  # 最大容许延时
+        maxDelay = 1  # 最大容许延时
         startTime = time()  # 开始时间
         frames = 0
         store = None
@@ -310,14 +219,21 @@ class Detector_RTMP:
                     for index, item in store.iterrows():
                         cv2.rectangle(frame_lwpCV, (item['xmin'], item['ymin']), (item['xmax'], item['ymax']), (255, 255, 0), 2)
                         cv2.putText(frame_lwpCV, str(item['name']), (item['xmin'] + 6, item['ymax'] - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255), 1)
+                    for i in range(3):
+                        for seg in self.segmentation[i]:
+                            xmin = seg['xmin']
+                            ymin = seg['ymin']
+                            xmax = seg['xmax']
+                            ymax = seg['ymax']
+                            msg = 'Area Level: ' + str(i + 1)
+                            cv2.rectangle(frame_lwpCV, (xmin, ymin), (xmax, ymax), (i * 60, 255, 0), 2)
+                            cv2.putText(frame_lwpCV, msg, (xmin + 6, ymax - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0,
+                                        (255, 255, 255), 1)
                     yield frame_lwpCV
-                    continue
                 # frame_lwpCV = cv2.resize(frame_lwpCV, size)
             except:
                 continue
-            # if not grabbed:
-            #     continue
-            print('process')
+            # print('process')
             # yolov5
             video = frame_lwpCV.copy()
             # video = frame_lwpCV[:, :, ::-1]
@@ -325,9 +241,6 @@ class Detector_RTMP:
             results = self.yolo(video)
             store = results.pandas().xyxy[0]
             results.render()  # updates results.imgs with boxes and labels
-
-            # 返回移动物体标注后的图像，移动物体数，是否为首次入侵，入侵时间
-            yield results.imgs[0]
 
             # if frame_cnt % 5 == 0:
             for i in range(3):
@@ -338,8 +251,10 @@ class Detector_RTMP:
                     ymax = seg['ymax']
                     msg = 'Area Level: ' + str(i + 1)
                     cv2.rectangle(results.imgs[0], (xmin, ymin), (xmax, ymax), (i * 60, 255, 0), 2)
-                    cv2.putText(results.imgs[0], msg, (xmin + 6, ymax - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255), 1)
-            # frame_cnt = frame_cnt % 5 + 1
+                    cv2.putText(results.imgs[0], msg, (xmin + 6, ymax - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0,
+                                (255, 255, 255), 1)
+            # 返回移动物体标注后的图像，移动物体数，是否为首次入侵，入侵时间
+            yield results.imgs[0]
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
